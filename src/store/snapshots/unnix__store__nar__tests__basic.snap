@@ -1,0 +1,18 @@
+---
+source: src/store/nar.rs
+expression: "Narinfo::parse(content)"
+---
+Ok(
+    Narinfo {
+        compression: Xz,
+        references: [
+            StorePath(
+                "5m9amsvvh2z8sl7jrnc87hzy21glw6k1-glibc-2.40-66",
+            ),
+            StorePath(
+                "hwz2l7ihv2skq7gr5l3paavs3rr9il7z-hello-2.12.1",
+            ),
+        ],
+        url: "nar/0h9dh04gd4zj0f4wcfn0i6f496q054fs3fpw099x5mcdayzi6ra6.nar.xz",
+    },
+)

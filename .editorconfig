@@ -1,0 +1,4 @@
+root = true
+
+[*.kdl]
+indent_size = 2

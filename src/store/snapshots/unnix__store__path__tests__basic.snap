@@ -1,0 +1,9 @@
+---
+source: src/store/path.rs
+expression: "StorePath::new(\"/nix/store/hwz2l7ihv2skq7gr5l3paavs3rr9il7z-hello-2.12.1\",)"
+---
+Ok(
+    StorePath(
+        "hwz2l7ihv2skq7gr5l3paavs3rr9il7z-hello-2.12.1",
+    ),
+)

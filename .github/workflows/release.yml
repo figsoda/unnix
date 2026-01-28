@@ -1,0 +1,60 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+  create_release:
+    name: create_release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/main/CHANGELOG.md)"
+
+  release:
+    name: release
+    needs: create_release
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          # - target: aarch64-apple-darwin
+          #   os: macos-latest
+          # - target: x86_64-apple-darwin
+          #   os: macos-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies (musl)
+        if: contains(matrix.target, 'musl')
+        run: |
+          sudo apt update
+          sudo apt install musl-tools
+
+      - name: Cargo build
+        run: |
+          rustup toolchain install nightly --profile minimal -t ${{ matrix.target }}
+          cargo +nightly build --release --target ${{ matrix.target }}
+        env:
+          RUSTFLAGS: -C strip=symbols
+
+      - name: Upload asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          tag: ${{ github.ref }}
+          file: target/${{ matrix.target }}/release/unnix
+          asset_name: unnix-${{ matrix.target }}

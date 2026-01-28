@@ -1,0 +1,67 @@
+[package]
+name = "unnix"
+version = "0.1.0"
+authors = ["figsoda <figsoda@pm.me>"]
+edition = "2024"
+description = ""
+readme = "README.md"
+homepage = "https://github.com/figsoda/unnix"
+repository = "https://github.com/figsoda/unnix"
+license = "MPL-2.0"
+keywords = []
+categories = []
+
+[dependencies]
+blake3 = "1.8.3"
+camino = "1.2.2"
+data-encoding = "2.10.0"
+dirs = "6.0.0"
+enum_dispatch = "0.3.13"
+itertools = "0.14.0"
+knus = "3.3.1"
+miette = { version = "7.6.0", features = ["fancy"] }
+monostate = "1.0.2"
+nix-nar = "0.3.1"
+regex = "1.12.3"
+reqwest = { version = "0.13.1", features = ["json"] }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+serde_json = "1.0.149"
+serde_with = "3.16.1"
+supports-color = "3.0.2"
+thiserror = "2.0.18"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+url = "2.5.8"
+
+[dependencies.async-compression]
+version = "0.4.37"
+features = [
+    "brotli",
+    "bzip2",
+    "gzip",
+    "lz4",
+    "lzma",
+    "tokio",
+    "xz-parallel",
+    "zstd",
+]
+
+[dependencies.clap]
+version = "4.5.57"
+features = ["cargo", "derive", "unicode", "wrap_help"]
+
+[dependencies.derive_more]
+version = "2.1.1"
+features = ["as_ref", "deref", "deref_mut", "display"]
+
+[dependencies.tokio]
+version = "1.49.0"
+features = ["io-util", "macros", "rt-multi-thread"]
+
+[dev-dependencies]
+insta = "1.46.3"
+
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1
