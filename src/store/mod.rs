@@ -1,21 +1,27 @@
 pub mod nar;
 pub mod path;
 
-use std::{fs::create_dir_all, io::Cursor, num::NonZero};
+use std::{fs::create_dir_all, io::Cursor, num::NonZero, rc::Rc};
 
 use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
 };
 use camino::Utf8PathBuf;
+use derive_more::AsRef;
 use dirs::cache_dir;
 use miette::{IntoDiagnostic, Result, miette};
 use nix_nar::Decoder;
-use tokio::io::{AsyncBufRead, AsyncReadExt};
+use tokio::{
+    io::{AsyncBufRead, AsyncReadExt},
+    task::spawn_blocking,
+};
 
 use crate::store::{nar::Compression, path::StorePath};
 
+#[derive(AsRef, Clone)]
+#[as_ref(forward)]
 pub struct Store {
-    pub path: Utf8PathBuf,
+    path: Rc<Utf8PathBuf>,
 }
 
 impl Store {
@@ -25,7 +31,9 @@ impl Store {
             .into_diagnostic()?
             .join("unnix/store");
         create_dir_all(&path).into_diagnostic()?;
-        Ok(Store { path })
+        Ok(Store {
+            path: Rc::new(path),
+        })
     }
 
     pub async fn unpack_nar(
@@ -87,12 +95,15 @@ impl Store {
             }
         }
 
-        Decoder::new(Cursor::new(buf))
-            .into_diagnostic()?
-            .unpack(self.path.join(path))
-            .into_diagnostic()?;
-
-        Ok(())
+        let path = self.path.join(path);
+        spawn_blocking(|| {
+            Decoder::new(Cursor::new(buf))
+                .into_diagnostic()?
+                .unpack(path)
+                .into_diagnostic()
+        })
+        .await
+        .into_diagnostic()?
     }
 
     pub fn contains(&self, path: &StorePath) -> bool {
