@@ -18,10 +18,10 @@ pub struct State {
     pub lockfile: Lockfile,
     pub manifest: Manifest,
     pub queue: BTreeSet<Rc<StorePath>>,
-    pub store: Store,
     pub system: System,
     client: Client,
     downloaded: BTreeSet<Rc<StorePath>>,
+    store: Store,
 }
 
 impl State {

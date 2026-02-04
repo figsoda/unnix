@@ -14,7 +14,7 @@ pub async fn shell(state: &mut State) -> Result<()> {
 
     let mut path_var: OsString = paths
         .iter()
-        .map(|path| state.store.path.join(&**path).join("bin"))
+        .map(|path| format!("/nix/store/{path}/bin"))
         .join(":")
         .into();
 
