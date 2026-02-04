@@ -5,7 +5,7 @@ use url::Url;
 pub struct Manifest {
     #[knus(child, default)]
     pub packages: Packages,
-    #[knus(child, default)]
+    #[knus(child, default = Caches { default: true, inner: Vec::new() })]
     pub caches: Caches,
     #[knus(children)]
     pub sources: Vec<Source>,
