@@ -54,9 +54,14 @@ features = ["cargo", "derive", "unicode", "wrap_help"]
 version = "2.1.1"
 features = ["as_ref", "deref", "deref_mut", "display"]
 
+[dependencies.fs4]
+version = "0.13.1"
+default-features = false
+features = ["tokio"]
+
 [dependencies.tokio]
 version = "1.49.0"
-features = ["io-util", "macros", "rt-multi-thread"]
+features = ["fs", "io-util", "macros", "rt-multi-thread", "time"]
 
 [dev-dependencies]
 insta = "1.46.3"
