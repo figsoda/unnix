@@ -1,7 +1,7 @@
 pub mod nar;
 pub mod path;
 
-use std::{fs::create_dir_all, io::Cursor, num::NonZero, rc::Rc, time::Duration};
+use std::{fs::create_dir_all, io::Cursor, num::NonZero, time::Duration};
 
 use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
@@ -24,7 +24,7 @@ use crate::store::{nar::Compression, path::StorePath};
 #[derive(Clone, Deref)]
 pub struct Store {
     #[deref]
-    path: Rc<Utf8PathBuf>,
+    path: Utf8PathBuf,
     lock: Utf8PathBuf,
     references: Utf8PathBuf,
 }
@@ -45,7 +45,7 @@ impl Store {
         create_dir_all(&references).into_diagnostic()?;
 
         Ok(Store {
-            path: Rc::new(path),
+            path,
             lock,
             references,
         })

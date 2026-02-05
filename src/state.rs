@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, io::Cursor, process::Command};
+use std::{collections::BTreeSet, io::Cursor, process::Command, rc::Rc};
 
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail};
@@ -25,7 +25,7 @@ pub struct State {
     pub system: System,
     client: Client,
     downloaded: BTreeSet<StorePath>,
-    store: Store,
+    store: Rc<Store>,
 }
 
 impl State {
@@ -37,7 +37,7 @@ impl State {
             lockfile: Lockfile::default(),
             manifest,
             queue: BTreeSet::new(),
-            store: Store::new()?,
+            store: Rc::new(Store::new()?),
             system: System::host()?,
         })
     }
@@ -122,11 +122,11 @@ impl State {
 
         if Utf8Path::new("/nix/store").is_dir() {
             cmd.arg("--overlay-src").arg("/nix/store");
-            cmd.arg("--overlay-src").arg(self.store.as_ref());
+            cmd.arg("--overlay-src").arg(self.store.as_os_str());
             cmd.arg("--ro-overlay").arg("/nix/store");
         } else {
             cmd.arg("--ro-bind")
-                .arg(self.store.as_ref())
+                .arg(self.store.as_os_str())
                 .arg("/nix/store");
         }
 
