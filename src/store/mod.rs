@@ -1,7 +1,12 @@
 pub mod nar;
 pub mod path;
 
-use std::{fs::create_dir_all, io::Cursor, num::NonZero, time::Duration};
+use std::{
+    fs::{create_dir_all, rename},
+    io::Cursor,
+    num::NonZero,
+    time::Duration,
+};
 
 use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
@@ -12,6 +17,7 @@ use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
 use miette::{IntoDiagnostic, Result, miette};
 use nix_nar::Decoder;
+use tempfile::TempDir;
 use tokio::{
     fs::File,
     io::{AsyncBufRead, AsyncReadExt, AsyncWriteExt},
@@ -58,6 +64,15 @@ impl Store {
         compression: Compression,
     ) -> Result<()> {
         let out = self.join(path);
+        if out.exists() {
+            return Ok(());
+        }
+
+        let lock = File::create(self.lock.join(path)).await.into_diagnostic()?;
+        while !lock.try_lock_exclusive().into_diagnostic()? {
+            sleep(Duration::from_millis(250)).await;
+        }
+
         if out.exists() {
             return Ok(());
         }
@@ -111,20 +126,16 @@ impl Store {
             }
         }
 
-        let lock = File::create(self.lock.join(&out)).await.into_diagnostic()?;
-        while !lock.try_lock_exclusive().into_diagnostic()? {
-            sleep(Duration::from_millis(250)).await;
-        }
-
-        if out.exists() {
-            return Ok(());
-        }
-
         spawn_blocking(|| {
+            let tmp = TempDir::with_prefix("unnix").into_diagnostic()?;
+            let tmp = tmp.path().join("out");
+
             Decoder::new(Cursor::new(buf))
                 .into_diagnostic()?
-                .unpack(out)
-                .into_diagnostic()
+                .unpack(&tmp)
+                .into_diagnostic()?;
+
+            rename(tmp, out).into_diagnostic()
         })
         .await
         .into_diagnostic()?
