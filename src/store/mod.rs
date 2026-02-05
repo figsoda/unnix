@@ -7,7 +7,7 @@ use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
 };
 use camino::Utf8PathBuf;
-use derive_more::AsRef;
+use derive_more::Deref;
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
 use miette::{IntoDiagnostic, Result, miette};
@@ -21,9 +21,9 @@ use tokio::{
 
 use crate::store::{nar::Compression, path::StorePath};
 
-#[derive(AsRef, Clone)]
+#[derive(Clone, Deref)]
 pub struct Store {
-    #[as_ref(forward)]
+    #[deref]
     path: Rc<Utf8PathBuf>,
     lock: Utf8PathBuf,
     references: Utf8PathBuf,
@@ -57,7 +57,8 @@ impl Store {
         mut reader: impl AsyncBufRead + Unpin,
         compression: Compression,
     ) -> Result<()> {
-        if self.contains(path) {
+        let out = self.join(path);
+        if out.exists() {
             return Ok(());
         }
 
@@ -110,20 +111,19 @@ impl Store {
             }
         }
 
-        let lock = File::create(self.lock.join(path)).await.into_diagnostic()?;
+        let lock = File::create(self.lock.join(&out)).await.into_diagnostic()?;
         while !lock.try_lock_exclusive().into_diagnostic()? {
             sleep(Duration::from_millis(250)).await;
         }
 
-        let path = self.path.join(path);
-        if path.exists() {
+        if out.exists() {
             return Ok(());
         }
 
         spawn_blocking(|| {
             Decoder::new(Cursor::new(buf))
                 .into_diagnostic()?
-                .unpack(path)
+                .unpack(out)
                 .into_diagnostic()
         })
         .await
@@ -155,9 +155,5 @@ impl Store {
 
         let buf = serde_json::to_vec(references).into_diagnostic()?;
         file.write_all(&buf).await.into_diagnostic()
-    }
-
-    pub fn contains(&self, path: &StorePath) -> bool {
-        self.path.join(path).exists()
     }
 }

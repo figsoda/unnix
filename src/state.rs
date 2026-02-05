@@ -77,7 +77,7 @@ impl State {
                         })
                         .collect();
 
-                    if self.store.contains(&path) {
+                    if self.store.join(&path).exists() {
                         self.queue.extend(references.iter().cloned());
                         continue;
                     }

@@ -52,7 +52,7 @@ features = ["cargo", "derive", "unicode", "wrap_help"]
 
 [dependencies.derive_more]
 version = "2.1.1"
-features = ["as_ref", "deref", "deref_mut", "display"]
+features = ["deref", "deref_mut", "display"]
 
 [dependencies.fs4]
 version = "0.13.1"
