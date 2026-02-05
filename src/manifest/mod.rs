@@ -30,7 +30,7 @@ impl Manifest {
                 imp::Source::Hydra(hydra) => (
                     hydra.name,
                     Rc::new(Source::Hydra(Jobset {
-                        domain: hydra.domain.inner,
+                        base: hydra.base.inner,
                         project: hydra.project.inner,
                         jobset: hydra.jobset.inner,
                     })),

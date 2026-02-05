@@ -27,7 +27,7 @@ pub enum Source {
 impl Default for Source {
     fn default() -> Self {
         Self::Hydra(Jobset {
-            domain: "hydra.nixos.org".into(),
+            base: "https://hydra.nixos.org".into(),
             project: "nixpkgs".into(),
             jobset: "unstable".into(),
         })

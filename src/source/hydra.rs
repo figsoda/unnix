@@ -10,7 +10,7 @@ use crate::{source::GetOutputs, store::path::StorePath, system::System};
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Jobset {
-    pub domain: String,
+    pub base: String,
     pub project: String,
     pub jobset: String,
 }
@@ -32,8 +32,8 @@ impl GetOutputs for Jobset {
         system: System,
     ) -> Result<HashMap<String, Rc<StorePath>>> {
         let url = format!(
-            "https://{}/job/{}/{}/{}.{}/latest",
-            self.domain, self.project, self.jobset, attribute, system,
+            "{}/job/{}/{}/{}.{}/latest",
+            self.base, self.project, self.jobset, attribute, system,
         );
 
         debug!(url);

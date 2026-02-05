@@ -53,7 +53,7 @@ pub struct Hydra {
     #[knus(argument)]
     pub name: String,
     #[knus(child)]
-    pub domain: StringArgument,
+    pub base: StringArgument,
     #[knus(child)]
     pub project: StringArgument,
     #[knus(child)]
