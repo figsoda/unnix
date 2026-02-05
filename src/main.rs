@@ -45,8 +45,8 @@ async fn main() -> Result<()> {
         Command::Lock => {
             command::lock(&mut state).await?;
         }
-        Command::Shell => {
-            command::shell(&mut state).await?;
+        Command::Shell(args) => {
+            command::shell(&mut state, args).await?;
         }
         Command::Update => {
             command::update(&mut state).await?;

@@ -9,6 +9,12 @@ pub struct Args {
 #[derive(Subcommand)]
 pub enum Command {
     Lock,
-    Shell,
+    Shell(ShellArgs),
     Update,
+}
+
+#[derive(Parser)]
+pub struct ShellArgs {
+    #[arg(short, long)]
+    pub command: Option<Vec<String>>,
 }

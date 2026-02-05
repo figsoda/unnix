@@ -3,9 +3,9 @@ use std::{env::var_os, ffi::OsString, os::unix::process::CommandExt};
 use itertools::Itertools;
 use miette::{Report, Result};
 
-use crate::state::State;
+use crate::{cli::ShellArgs, state::State};
 
-pub async fn shell(state: &mut State) -> Result<()> {
+pub async fn shell(state: &mut State, args: ShellArgs) -> Result<()> {
     state.lock().await?;
     let paths = state.collect_outputs();
 
@@ -25,7 +25,14 @@ pub async fn shell(state: &mut State) -> Result<()> {
 
     let mut cmd = state.bwrap();
     cmd.env("PATH", path_var);
-    cmd.arg("fish");
+
+    if let Some(args) = args.command {
+        cmd.args(args);
+    } else if let Some(shell) = var_os("SHELL") {
+        cmd.arg(shell);
+    } else {
+        cmd.arg("sh");
+    }
 
     Err(Report::from_err(cmd.exec()))
 }
