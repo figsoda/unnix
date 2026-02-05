@@ -1,6 +1,7 @@
-use std::sync::LazyLock;
+use std::{rc::Rc, sync::LazyLock};
 
-use derive_more::{AsRef, Display};
+use camino::Utf8Path;
+use derive_more::Display;
 use miette::{Result, bail, miette};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -8,9 +9,8 @@ use serde::{Deserialize, Serialize};
 static STORELESS_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^[0-9abcdfghijklmnpqrsvwxyz]{32}-[^/]+$").unwrap());
 
-#[derive(AsRef, Clone, Debug, Deserialize, Display, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-#[as_ref(forward)]
-pub struct StorePath(String);
+#[derive(Clone, Debug, Deserialize, Display, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub struct StorePath(Rc<str>);
 
 impl StorePath {
     pub fn new(path: &str) -> Result<Self> {
@@ -19,7 +19,7 @@ impl StorePath {
             .and_then(StorePath::from_storeless)
     }
 
-    pub fn from_storeless(path: impl Into<String>) -> Result<Self> {
+    pub fn from_storeless(path: impl Into<Rc<str>>) -> Result<Self> {
         let path = path.into();
         if STORELESS_REGEX.is_match(&path) {
             Ok(Self(path))
@@ -30,6 +30,12 @@ impl StorePath {
 
     pub fn hash(&self) -> &str {
         &self.0[.. 32]
+    }
+}
+
+impl AsRef<Utf8Path> for StorePath {
+    fn as_ref(&self) -> &Utf8Path {
+        Utf8Path::new(&self.0)
     }
 }
 

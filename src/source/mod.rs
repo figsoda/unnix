@@ -1,6 +1,6 @@
 pub mod hydra;
 
-use std::{collections::HashMap, rc::Rc};
+use std::collections::HashMap;
 
 use enum_dispatch::enum_dispatch;
 use miette::Result;
@@ -14,7 +14,7 @@ pub trait GetOutputs {
         &self,
         attribute: &str,
         system: System,
-    ) -> Result<HashMap<String, Rc<StorePath>>>;
+    ) -> Result<HashMap<String, StorePath>>;
 }
 
 #[derive(Debug, Deserialize, Serialize)]

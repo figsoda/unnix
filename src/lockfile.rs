@@ -2,7 +2,6 @@ use std::{
     collections::HashMap,
     fs::File,
     io::{Read, Write},
-    rc::Rc,
 };
 
 use camino::Utf8Path;
@@ -43,7 +42,7 @@ pub struct Packages {
 pub struct PackageLock {
     #[serde_as(as = "DisplayFromStr")]
     hash: Base64Hash,
-    pub outputs: HashMap<String, Rc<StorePath>>,
+    pub outputs: HashMap<String, StorePath>,
 }
 
 #[derive(Debug, Diagnostic, Error)]

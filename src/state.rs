@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, io::Cursor, process::Command, rc::Rc};
+use std::{collections::BTreeSet, io::Cursor, process::Command};
 
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail};
@@ -18,10 +18,10 @@ pub struct State {
     pub dir: Utf8PathBuf,
     pub lockfile: Lockfile,
     pub manifest: Manifest,
-    pub queue: BTreeSet<Rc<StorePath>>,
+    pub queue: BTreeSet<StorePath>,
     pub system: System,
     client: Client,
-    downloaded: BTreeSet<Rc<StorePath>>,
+    downloaded: BTreeSet<StorePath>,
     store: Store,
 }
 
@@ -50,7 +50,7 @@ impl State {
         Ok(())
     }
 
-    pub fn collect_outputs(&mut self) -> Vec<Rc<StorePath>> {
+    pub fn collect_outputs(&mut self) -> Vec<StorePath> {
         let Some(packages) = self.lockfile.systems.get(&self.system) else {
             return Vec::new();
         };
@@ -72,14 +72,9 @@ impl State {
                     }
 
                     let (cache, narinfo) = self.query(&path).await?;
-                    let references =
-                        narinfo
-                            .references
-                            .into_iter()
-                            .map(Rc::new)
-                            .filter(|reference| {
-                                *reference != path && !self.downloaded.contains(reference)
-                            });
+                    let references = narinfo.references.into_iter().filter(|reference| {
+                        *reference != path && !self.downloaded.contains(reference)
+                    });
 
                     if self.store.contains(&path) {
                         self.queue.extend(references);

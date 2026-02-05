@@ -1,4 +1,4 @@
-use std::{collections::HashMap, rc::Rc};
+use std::collections::HashMap;
 
 use miette::{IntoDiagnostic, Result};
 use reqwest::{Client, Method, header::ACCEPT};
@@ -30,7 +30,7 @@ impl GetOutputs for Jobset {
         &self,
         attribute: &str,
         system: System,
-    ) -> Result<HashMap<String, Rc<StorePath>>> {
+    ) -> Result<HashMap<String, StorePath>> {
         let url = format!(
             "{}/job/{}/{}/{}.{}/latest",
             self.base, self.project, self.jobset, attribute, system,
@@ -51,7 +51,7 @@ impl GetOutputs for Jobset {
         build
             .buildoutputs
             .into_iter()
-            .map(|(name, output)| Ok((name, Rc::new(StorePath::new(&output.path)?))))
+            .map(|(name, output)| Ok((name, StorePath::new(&output.path)?)))
             .collect()
     }
 }
