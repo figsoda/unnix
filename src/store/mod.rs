@@ -14,7 +14,7 @@ use miette::{IntoDiagnostic, Result, miette};
 use nix_nar::Decoder;
 use tokio::{
     fs::File,
-    io::{AsyncBufRead, AsyncReadExt},
+    io::{AsyncBufRead, AsyncReadExt, AsyncWriteExt},
     task::spawn_blocking,
     time::sleep,
 };
@@ -26,6 +26,7 @@ pub struct Store {
     #[as_ref(forward)]
     path: Rc<Utf8PathBuf>,
     lock: Utf8PathBuf,
+    references: Utf8PathBuf,
 }
 
 impl Store {
@@ -37,13 +38,16 @@ impl Store {
 
         let path = cache.join("store");
         let lock = cache.join("lock");
+        let references = cache.join("references");
 
         create_dir_all(&path).into_diagnostic()?;
         create_dir_all(&lock).into_diagnostic()?;
+        create_dir_all(&references).into_diagnostic()?;
 
         Ok(Store {
             path: Rc::new(path),
             lock,
+            references,
         })
     }
 
@@ -124,6 +128,33 @@ impl Store {
         })
         .await
         .into_diagnostic()?
+    }
+
+    pub async fn get_references(&self, hash: &str) -> Result<Option<Vec<StorePath>>> {
+        let Ok(mut file) = File::open(self.references.join(format!("{hash}.json"))).await else {
+            return Ok(None);
+        };
+
+        while !file.try_lock_exclusive().into_diagnostic()? {
+            sleep(Duration::from_millis(250)).await;
+        }
+
+        let mut text = String::new();
+        file.read_to_string(&mut text).await.into_diagnostic()?;
+        serde_json::from_str(&text).into_diagnostic()
+    }
+
+    pub async fn put_references(&self, hash: &str, references: &[StorePath]) -> Result<()> {
+        let mut file = File::create(self.references.join(format!("{hash}.json")))
+            .await
+            .into_diagnostic()?;
+
+        if !file.try_lock_exclusive().into_diagnostic()? {
+            return Ok(());
+        }
+
+        let buf = serde_json::to_vec(references).into_diagnostic()?;
+        file.write_all(&buf).await.into_diagnostic()
     }
 
     pub fn contains(&self, path: &StorePath) -> bool {

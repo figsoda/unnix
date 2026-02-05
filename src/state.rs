@@ -3,7 +3,10 @@ use std::{collections::BTreeSet, io::Cursor, process::Command};
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail};
 use reqwest::{Client, StatusCode};
-use tokio::task::{JoinSet, LocalSet};
+use tokio::{
+    task::{JoinSet, LocalSet},
+    try_join,
+};
 use tracing::{debug, info, warn};
 use url::Url;
 
@@ -60,35 +63,49 @@ impl State {
                         continue;
                     }
 
+                    if let Some(references) = self.store.get_references(path.hash()).await? {
+                        self.queue.extend(references);
+                        continue;
+                    }
+
                     let (cache, narinfo) = self.query(&path).await?;
-                    let references = narinfo.references.into_iter().filter(|reference| {
-                        *reference != path && !self.downloaded.contains(reference)
-                    });
+                    let references: Vec<_> = narinfo
+                        .references
+                        .into_iter()
+                        .filter(|reference| {
+                            *reference != path && !self.downloaded.contains(reference)
+                        })
+                        .collect();
 
                     if self.store.contains(&path) {
-                        self.queue.extend(references);
+                        self.queue.extend(references.iter().cloned());
                         continue;
                     }
 
                     info!("downloading {path} from {cache}");
                     let nar = cache.join(&narinfo.url).into_diagnostic()?;
-                    self.queue.extend(references);
+                    self.queue.extend(references.iter().cloned());
 
                     let client = self.client.clone();
                     let store = self.store.clone();
                     tasks.spawn_local(async move {
-                        let nar = client
-                            .get(nar)
-                            .send()
-                            .await
-                            .into_diagnostic()?
-                            .bytes()
-                            .await
-                            .into_diagnostic()?;
+                        let put_references = store.put_references(path.hash(), &references);
+                        let unpack_nar = async {
+                            let nar = client
+                                .get(nar)
+                                .send()
+                                .await
+                                .into_diagnostic()?
+                                .bytes()
+                                .await
+                                .into_diagnostic()?;
 
-                        store
-                            .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
-                            .await
+                            store
+                                .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
+                                .await
+                        };
+                        try_join!(put_references, unpack_nar)?;
+                        Ok(())
                     });
                 }
 
