@@ -8,6 +8,7 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Command {
+    Cache,
     Lock,
     Shell(ShellArgs),
     Update,

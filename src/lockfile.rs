@@ -125,6 +125,15 @@ impl Lockfile {
         Ok(())
     }
 
+    pub fn outputs(&self, system: &System) -> impl Iterator<Item = StorePath> {
+        self.systems
+            .get(system)
+            .into_iter()
+            .flat_map(|packages| packages.values())
+            .flat_map(|pkg| pkg.outputs.values())
+            .cloned()
+    }
+
     pub fn get(&self, system: System, name: &str) -> Option<&PackageLock> {
         self.systems.get(&system)?.get(name)
     }

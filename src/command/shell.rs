@@ -7,7 +7,7 @@ use crate::{cli::ShellArgs, state::State};
 
 pub async fn shell(state: &mut State, args: ShellArgs) -> Result<()> {
     state.lock().await?;
-    let paths = state.collect_outputs();
+    let paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
 
     state.queue.extend(paths.iter().cloned());
     state.pull().await?;

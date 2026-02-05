@@ -50,17 +50,6 @@ impl State {
         Ok(())
     }
 
-    pub fn collect_outputs(&mut self) -> Vec<StorePath> {
-        let Some(packages) = self.lockfile.systems.get(&self.system) else {
-            return Vec::new();
-        };
-        packages
-            .values()
-            .flat_map(|pkg| pkg.outputs.values())
-            .cloned()
-            .collect()
-    }
-
     pub async fn pull(&mut self) -> Result<()> {
         LocalSet::new()
             .run_until(async {

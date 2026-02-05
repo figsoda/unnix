@@ -42,6 +42,9 @@ async fn main() -> Result<()> {
     let mut state = State::new(manifest)?;
 
     match args.command {
+        Command::Cache => {
+            command::cache(&mut state).await?;
+        }
         Command::Lock => {
             command::lock(&mut state).await?;
         }
