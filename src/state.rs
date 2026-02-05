@@ -1,12 +1,9 @@
-use std::{collections::BTreeSet, io::Cursor, process::Command, rc::Rc};
+use std::{collections::BTreeSet, io::Cursor, process::Command, sync::Arc};
 
 use camino::{Utf8Path, Utf8PathBuf};
-use miette::{IntoDiagnostic, Result, bail};
+use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
-use tokio::{
-    task::{JoinSet, LocalSet},
-    try_join,
-};
+use tokio::{select, sync::mpsc, task::JoinSet, try_join};
 use tracing::{debug, info, warn};
 use url::Url;
 
@@ -21,23 +18,17 @@ pub struct State {
     pub dir: Utf8PathBuf,
     pub lockfile: Lockfile,
     pub manifest: Manifest,
-    pub queue: BTreeSet<StorePath>,
     pub system: System,
-    client: Client,
-    downloaded: BTreeSet<StorePath>,
-    store: Rc<Store>,
+    store: Arc<Store>,
 }
 
 impl State {
     pub fn new(manifest: Manifest) -> Result<Self> {
         Ok(Self {
-            client: Client::new(),
             dir: Utf8PathBuf::from("."),
-            downloaded: BTreeSet::new(),
             lockfile: Lockfile::default(),
             manifest,
-            queue: BTreeSet::new(),
-            store: Rc::new(Store::new()?),
+            store: Arc::new(Store::new()?),
             system: System::host()?,
         })
     }
@@ -53,65 +44,85 @@ impl State {
         Ok(())
     }
 
-    pub async fn pull(&mut self) -> Result<()> {
-        LocalSet::new()
-            .run_until(async {
-                let mut tasks = JoinSet::new();
+    pub async fn pull(&mut self, paths: Vec<StorePath>) -> Result<()> {
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        tx.send(paths).map_err(|_| miette!("channel closed"))?;
 
-                while let Some(path) = self.queue.pop_first() {
-                    if !self.downloaded.insert(path.clone()) {
-                        continue;
+        let client = Client::new();
+        let mut downloaded = BTreeSet::new();
+        let mut tasks = JoinSet::new();
+
+        loop {
+            let join_all = async {
+                while let Some(res) = tasks.join_next().await {
+                    res.into_diagnostic()??;
+                }
+                Result::<_>::Ok(())
+            };
+
+            let paths = select! {
+                paths = rx.recv() => paths,
+                res = join_all => {
+                    res?;
+                    if let Ok(paths) = rx.try_recv() {
+                        Some(paths)
+                    } else {
+                        break;
+                    }
+                },
+            };
+
+            let Some(paths) = paths else {
+                break;
+            };
+
+            for path in paths {
+                if !downloaded.insert(path.clone()) {
+                    continue;
+                }
+
+                let caches = self.manifest.caches.clone();
+                let client = client.clone();
+                let store = self.store.clone();
+                let tx = tx.clone();
+
+                tasks.spawn(async move {
+                    if store.join(&path).exists()
+                        && let Some(references) = store.get_references(path.hash()).await?
+                    {
+                        tx.send(references).map_err(|_| miette!("channel closed"))?;
+                        return Ok(());
                     }
 
-                    if let Some(references) = self.store.get_references(path.hash()).await? {
-                        self.queue.extend(references);
-                        continue;
-                    }
-
-                    let (cache, narinfo) = self.query(&path).await?;
-                    let references: Vec<_> = narinfo
-                        .references
-                        .into_iter()
-                        .filter(|reference| {
-                            *reference != path && !self.downloaded.contains(reference)
-                        })
-                        .collect();
-
-                    if self.store.join(&path).exists() {
-                        self.queue.extend(references.iter().cloned());
-                        continue;
-                    }
+                    let (cache, narinfo) = query(&client, &path, caches).await?;
 
                     info!("downloading {path} from {cache}");
                     let nar = cache.join(&narinfo.url).into_diagnostic()?;
-                    self.queue.extend(references.iter().cloned());
+                    tx.send(narinfo.references.clone())
+                        .map_err(|_| miette!("channel closed"))?;
 
-                    let client = self.client.clone();
-                    let store = self.store.clone();
-                    tasks.spawn_local(async move {
-                        let put_references = store.put_references(path.hash(), &references);
-                        let unpack_nar = async {
-                            let nar = client
-                                .get(nar)
-                                .send()
-                                .await
-                                .into_diagnostic()?
-                                .bytes()
-                                .await
-                                .into_diagnostic()?;
+                    let put_references = store.put_references(path.hash(), &narinfo.references);
+                    let unpack_nar = async {
+                        let nar = client
+                            .get(nar)
+                            .send()
+                            .await
+                            .into_diagnostic()?
+                            .bytes()
+                            .await
+                            .into_diagnostic()?;
 
-                            store
-                                .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
-                                .await
-                        };
-                        try_join!(put_references, unpack_nar)?;
-                        Ok(())
-                    });
-                }
+                        store
+                            .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
+                            .await
+                    };
+                    try_join!(put_references, unpack_nar)?;
+                    Result::<_>::Ok(())
+                });
+            }
+        }
 
-                tasks.join_all().await.into_iter().collect()
-            })
-            .await
+        Ok(())
     }
 
     pub fn bwrap(&self) -> Command {
@@ -133,42 +144,45 @@ impl State {
         cmd.arg("--");
         cmd
     }
+}
 
-    async fn query(&self, path: &StorePath) -> Result<(&Url, Narinfo)> {
-        for cache in &self.manifest.caches {
-            debug!("checking {path} on {cache}");
-            match self.query_one(path.hash(), cache).await {
-                Ok(Some(narinfo)) => {
-                    return Ok((cache, Narinfo::parse(&narinfo)?));
-                }
-                Ok(None) => {}
-                Err(e) => {
-                    warn!("{e}");
-                }
+async fn query(
+    client: &Client,
+    path: &StorePath,
+    caches: Vec<Arc<Url>>,
+) -> Result<(Arc<Url>, Narinfo)> {
+    for cache in caches {
+        debug!("checking {path} on {cache}");
+        match query_one(client, path.hash(), &cache).await {
+            Ok(Some(narinfo)) => {
+                return Ok((cache, Narinfo::parse(&narinfo)?));
+            }
+            Ok(None) => {}
+            Err(e) => {
+                warn!("{e}");
             }
         }
-
-        bail!("{path} could not be found in any cache");
     }
 
-    async fn query_one(&self, hash: &str, cache: &Url) -> Result<Option<String>> {
-        let res = self
-            .client
-            .get(cache.join(&format!("{hash}.narinfo")).into_diagnostic()?)
-            .send()
-            .await
-            .into_diagnostic()?;
+    bail!("{path} could not be found in any cache");
+}
 
-        if res.status() == StatusCode::NOT_FOUND {
-            Ok(None)
-        } else {
-            Ok(Some(
-                res.error_for_status()
-                    .into_diagnostic()?
-                    .text()
-                    .await
-                    .into_diagnostic()?,
-            ))
-        }
+async fn query_one(client: &Client, hash: &str, cache: &Url) -> Result<Option<String>> {
+    let res = client
+        .get(cache.join(&format!("{hash}.narinfo")).into_diagnostic()?)
+        .send()
+        .await
+        .into_diagnostic()?;
+
+    if res.status() == StatusCode::NOT_FOUND {
+        Ok(None)
+    } else {
+        Ok(Some(
+            res.error_for_status()
+                .into_diagnostic()?
+                .text()
+                .await
+                .into_diagnostic()?,
+        ))
     }
 }

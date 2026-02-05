@@ -9,14 +9,13 @@ pub async fn shell(state: &mut State, args: ShellArgs) -> Result<()> {
     state.lock().await?;
     let paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
 
-    state.queue.extend(paths.iter().cloned());
-    state.pull().await?;
-
     let mut path_var: OsString = paths
         .iter()
         .map(|path| format!("/nix/store/{path}/bin"))
         .join(":")
         .into();
+
+    state.pull(paths).await?;
 
     if let Some(paths) = var_os("PATH") {
         path_var.push(":");

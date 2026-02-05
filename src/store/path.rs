@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::LazyLock};
+use std::sync::{Arc, LazyLock};
 
 use camino::Utf8Path;
 use derive_more::Display;
@@ -10,7 +10,7 @@ static STORELESS_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^[0-9abcdfghijklmnpqrsvwxyz]{32}-[^/]+$").unwrap());
 
 #[derive(Clone, Debug, Deserialize, Display, Eq, Ord, PartialEq, PartialOrd, Serialize)]
-pub struct StorePath(Rc<str>);
+pub struct StorePath(Arc<str>);
 
 impl StorePath {
     pub fn new(path: &str) -> Result<Self> {
@@ -19,7 +19,7 @@ impl StorePath {
             .and_then(StorePath::from_storeless)
     }
 
-    pub fn from_storeless(path: impl Into<Rc<str>>) -> Result<Self> {
+    pub fn from_storeless(path: impl Into<Arc<str>>) -> Result<Self> {
         let path = path.into();
         if STORELESS_REGEX.is_match(&path) {
             Ok(Self(path))

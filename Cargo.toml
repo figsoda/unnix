@@ -62,7 +62,7 @@ features = ["tokio"]
 
 [dependencies.tokio]
 version = "1.49.0"
-features = ["fs", "io-util", "macros", "rt-multi-thread", "time"]
+features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [dev-dependencies]
 insta = "1.46.3"

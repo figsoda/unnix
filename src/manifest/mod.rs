@@ -1,6 +1,6 @@
 mod imp;
 
-use std::{collections::HashMap, fs::read_to_string, rc::Rc};
+use std::{collections::HashMap, fs::read_to_string, rc::Rc, sync::Arc};
 
 use camino::Utf8Path;
 use miette::{IntoDiagnostic, Result, miette};
@@ -14,7 +14,7 @@ use crate::{
 #[derive(Debug)]
 pub struct Manifest {
     pub packages: HashMap<String, Package>,
-    pub caches: Vec<Url>,
+    pub caches: Vec<Arc<Url>>,
 }
 
 impl Manifest {
@@ -61,9 +61,17 @@ impl Manifest {
 
         let mut caches = Vec::new();
         if manifest.caches.default {
-            caches.push(Url::parse("https://cache.nixos.org").into_diagnostic()?);
+            caches.push(Arc::new(
+                Url::parse("https://cache.nixos.org").into_diagnostic()?,
+            ));
         }
-        caches.extend(manifest.caches.inner.into_iter().map(|cache| cache.url));
+        caches.extend(
+            manifest
+                .caches
+                .inner
+                .into_iter()
+                .map(|cache| Arc::new(cache.url)),
+        );
 
         Ok(Self { packages, caches })
     }
