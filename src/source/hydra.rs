@@ -5,7 +5,11 @@ use reqwest::{Client, Method, header::ACCEPT};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
-use crate::{source::GetOutputs, store::path::StorePath, system::System};
+use crate::{
+    source::{GetOutputs, format},
+    store::path::StorePath,
+    system::System,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -13,6 +17,7 @@ pub struct Jobset {
     pub base: String,
     pub project: String,
     pub jobset: String,
+    pub job: String,
 }
 
 #[derive(Deserialize)]
@@ -32,8 +37,11 @@ impl GetOutputs for Jobset {
         system: System,
     ) -> Result<HashMap<String, StorePath>> {
         let url = format!(
-            "{}/job/{}/{}/{}.{}/latest",
-            self.base, self.project, self.jobset, attribute, system,
+            "{}/job/{}/{}/{}/latest-for/{system}",
+            self.base,
+            self.project,
+            self.jobset,
+            format(&self.job, attribute, system)?,
         );
 
         debug!(url);

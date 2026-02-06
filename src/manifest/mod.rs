@@ -33,6 +33,7 @@ impl Manifest {
                         base: hydra.base.inner,
                         project: hydra.project.inner,
                         jobset: hydra.jobset.inner,
+                        job: hydra.job.inner,
                     })),
                 ),
             })

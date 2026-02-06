@@ -1,3 +1,4 @@
+use derive_more::From;
 use knus::Decode;
 use url::Url;
 
@@ -58,9 +59,12 @@ pub struct Hydra {
     pub project: StringArgument,
     #[knus(child)]
     pub jobset: StringArgument,
+    #[knus(child, default = "{attribute}.{system}".into())]
+    pub job: StringArgument,
 }
 
-#[derive(Decode)]
+#[derive(Decode, From)]
+#[from(forward)]
 pub struct StringArgument {
     #[knus(argument)]
     pub inner: String,

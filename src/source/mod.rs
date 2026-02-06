@@ -3,8 +3,9 @@ pub mod hydra;
 use std::collections::HashMap;
 
 use enum_dispatch::enum_dispatch;
-use miette::Result;
+use miette::{IntoDiagnostic, Result};
 use serde::{Deserialize, Serialize};
+use strfmt::strfmt;
 
 use crate::{source::hydra::Jobset, store::path::StorePath, system::System};
 
@@ -30,6 +31,15 @@ impl Default for Source {
             base: "https://hydra.nixos.org".into(),
             project: "nixpkgs".into(),
             jobset: "unstable".into(),
+            job: "{attribute}.{system}".into(),
         })
     }
+}
+
+fn format(template: &str, attribute: &str, system: System) -> Result<String> {
+    let system = system.to_string();
+    let mut params = HashMap::<String, _>::new();
+    params.insert("attribute".into(), attribute);
+    params.insert("system".into(), &system);
+    strfmt(template, &params).into_diagnostic()
 }

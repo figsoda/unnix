@@ -27,6 +27,7 @@ reqwest = { version = "0.13.1", features = ["json"] }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.149"
 serde_with = "3.16.1"
+strfmt = "0.2.5"
 supports-color = "3.0.2"
 tempfile = "3.24.0"
 thiserror = "2.0.18"
@@ -53,7 +54,7 @@ features = ["cargo", "derive", "unicode", "wrap_help"]
 
 [dependencies.derive_more]
 version = "2.1.1"
-features = ["deref", "deref_mut", "display"]
+features = ["deref", "deref_mut", "display", "from"]
 
 [dependencies.fs4]
 version = "0.13.1"
