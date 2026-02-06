@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeSet,
     fmt::{self, Display, Formatter},
     rc::Rc,
     str::FromStr,
@@ -14,7 +15,7 @@ use crate::source::Source;
 #[derive(Debug, Serialize)]
 pub struct Package {
     pub attribute: String,
-    pub outputs: Option<Vec<String>>,
+    pub outputs: Option<BTreeSet<String>>,
     pub source: Rc<Source>,
 }
 
