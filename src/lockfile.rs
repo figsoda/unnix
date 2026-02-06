@@ -5,7 +5,6 @@ use std::{
 };
 
 use camino::Utf8Path;
-use derive_more::{Deref, DerefMut};
 use miette::{Diagnostic, IntoDiagnostic, NamedSource, Report, Result, SourceOffset};
 use monostate::MustBe;
 use serde::{Deserialize, Serialize};
@@ -28,12 +27,7 @@ type Version = MustBe!(0u64);
 pub struct Lockfile {
     version: Version,
     #[serde_as(as = "HashMap<DisplayFromStr, _>")]
-    pub systems: HashMap<System, Packages>,
-}
-
-#[derive(Debug, Deref, DerefMut, Default, Deserialize, Serialize)]
-pub struct Packages {
-    packages: HashMap<String, PackageLock>,
+    pub systems: HashMap<System, HashMap<String, PackageLock>>,
 }
 
 #[serde_as]
