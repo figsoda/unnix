@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use enum_dispatch::enum_dispatch;
 use miette::{IntoDiagnostic, Result};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use strfmt::strfmt;
 
 use crate::{source::hydra::Jobset, store::path::StorePath, system::System};
@@ -18,9 +18,9 @@ pub trait GetOutputs {
     ) -> Result<HashMap<String, StorePath>>;
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize)]
 #[enum_dispatch(GetOutputs)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case", tag = "type")]
+#[serde(rename_all = "kebab-case", tag = "type")]
 pub enum Source {
     Hydra(Jobset),
 }

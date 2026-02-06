@@ -11,8 +11,7 @@ use crate::{
     system::System,
 };
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Serialize)]
 pub struct Jobset {
     pub base: String,
     pub project: String,

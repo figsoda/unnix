@@ -30,7 +30,7 @@ pub struct Package {
     pub source: String,
 }
 
-#[derive(Decode, Default)]
+#[derive(Decode)]
 pub struct Caches {
     #[knus(property, default = true)]
     pub default: bool,
