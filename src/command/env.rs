@@ -15,6 +15,12 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
         .join(":")
         .into();
 
+    let mut pkg_config_path: OsString = paths
+        .iter()
+        .flat_map(|path| state.canonicalize_subpath(path, "lib/pkgconfig"))
+        .join(":")
+        .into();
+
     state.pull(paths).await?;
 
     if let Some(paths) = var_os("PATH") {
@@ -22,8 +28,14 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
         path_var.push(paths);
     }
 
+    if let Some(paths) = var_os("PKG_CONFIG_PATH") {
+        pkg_config_path.push(":");
+        pkg_config_path.push(paths);
+    }
+
     let mut cmd = state.bwrap();
-    cmd.env("PATH", path_var);
+    cmd.env("PATH", path_var)
+        .env("PKG_CONFIG_PATH", pkg_config_path);
 
     if let Some(args) = args.command {
         cmd.args(args);
