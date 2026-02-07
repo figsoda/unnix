@@ -4,7 +4,8 @@ use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
 use tokio::{select, sync::mpsc, task::JoinSet, try_join};
-use tracing::{debug, info, warn};
+use tracing::{debug, info, info_span, warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 use url::Url;
 
 use crate::{
@@ -45,6 +46,10 @@ impl State {
     }
 
     pub async fn pull(&mut self, paths: Vec<StorePath>) -> Result<()> {
+        let span = info_span!("progress");
+        span.pb_set_length(0);
+        let _guard = span.enter();
+
         let (tx, mut rx) = mpsc::unbounded_channel();
         tx.send(paths).map_err(|_| miette!("channel closed"))?;
 
@@ -81,8 +86,11 @@ impl State {
                     continue;
                 }
 
+                span.pb_inc_length(1);
+
                 let caches = self.manifest.caches.clone();
                 let client = client.clone();
+                let span = span.clone();
                 let store = self.store.clone();
                 let tx = tx.clone();
 
@@ -116,7 +124,9 @@ impl State {
                             .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
                             .await
                     };
+
                     try_join!(put_references, unpack_nar)?;
+                    span.pb_inc(1);
                     Result::<_>::Ok(())
                 });
             }

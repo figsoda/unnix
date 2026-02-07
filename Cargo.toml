@@ -32,6 +32,7 @@ supports-color = "3.0.2"
 tempfile = "3.24.0"
 thiserror = "2.0.18"
 tracing = "0.1.44"
+tracing-indicatif = "0.3.14"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 url = "2.5.8"
 
