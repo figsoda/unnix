@@ -11,7 +11,7 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
 
     let mut path_var: OsString = paths
         .iter()
-        .map(|path| format!("/nix/store/{path}/bin"))
+        .flat_map(|path| state.canonicalize_subpath(path, "bin"))
         .join(":")
         .into();
 
