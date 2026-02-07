@@ -3,9 +3,9 @@ use std::{env::var_os, ffi::OsString, os::unix::process::CommandExt};
 use itertools::Itertools;
 use miette::{Report, Result};
 
-use crate::{cli::ShellArgs, state::State};
+use crate::{cli::EnvArgs, state::State};
 
-pub async fn shell(state: &mut State, args: ShellArgs) -> Result<()> {
+pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
     state.lock().await?;
     let paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
 

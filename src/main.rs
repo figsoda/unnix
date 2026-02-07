@@ -55,11 +55,11 @@ async fn main() -> Result<()> {
         Command::Cache => {
             command::cache(&mut state).await?;
         }
+        Command::Env(args) => {
+            command::env(&mut state, args).await?;
+        }
         Command::Lock => {
             command::lock(&mut state).await?;
-        }
-        Command::Shell(args) => {
-            command::shell(&mut state, args).await?;
         }
         Command::Update => {
             command::update(&mut state).await?;

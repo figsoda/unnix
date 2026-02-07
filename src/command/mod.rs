@@ -1,9 +1,9 @@
 mod cache;
+mod env;
 mod lock;
-mod shell;
 mod update;
 
 pub use cache::cache;
+pub use env::env;
 pub use lock::lock;
-pub use shell::shell;
 pub use update::update;

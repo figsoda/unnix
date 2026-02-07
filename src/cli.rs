@@ -9,13 +9,13 @@ pub struct Args {
 #[derive(Subcommand)]
 pub enum Command {
     Cache,
+    Env(EnvArgs),
     Lock,
-    Shell(ShellArgs),
     Update,
 }
 
 #[derive(Parser)]
-pub struct ShellArgs {
+pub struct EnvArgs {
     #[arg(short, long)]
     pub command: Option<Vec<String>>,
 }
