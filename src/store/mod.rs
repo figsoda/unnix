@@ -2,6 +2,7 @@ pub mod nar;
 pub mod path;
 
 use std::{
+    collections::BTreeSet,
     fs::{create_dir_all, rename},
     io::Cursor,
     num::NonZero,
@@ -11,7 +12,7 @@ use std::{
 use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
 };
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Deref;
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
@@ -21,7 +22,7 @@ use tempfile::TempDir;
 use tokio::{
     fs::File,
     io::{AsyncBufRead, AsyncReadExt, AsyncWriteExt},
-    task::spawn_blocking,
+    task::{JoinSet, LocalSet, spawn_blocking},
     time::sleep,
 };
 
@@ -166,5 +167,63 @@ impl Store {
 
         let buf = serde_json::to_vec(references).into_diagnostic()?;
         file.write_all(&buf).await.into_diagnostic()
+    }
+
+    pub async fn propagated_build_inputs(
+        &self,
+        mut paths: Vec<StorePath>,
+    ) -> Result<BTreeSet<StorePath>> {
+        let mut propagated: BTreeSet<_> = paths.iter().cloned().collect();
+        let mut checked = BTreeSet::new();
+
+        let local = LocalSet::new();
+        let mut tasks = JoinSet::new();
+
+        while !paths.is_empty() {
+            for path in paths.drain(..) {
+                if !checked.insert(path.clone()) {
+                    continue;
+                }
+
+                let path = self.join(path).join("nix-support/propagated-build-inputs");
+                tasks.spawn_local_on(
+                    async move {
+                        let Ok(mut file) = File::open(path).await else {
+                            return Ok(Vec::new());
+                        };
+
+                        let mut text = String::new();
+                        file.read_to_string(&mut text).await.into_diagnostic()?;
+                        text.split_whitespace().map(StorePath::new).collect()
+                    },
+                    &local,
+                );
+            }
+
+            local
+                .run_until(async {
+                    while let Some(res) = tasks.join_next().await {
+                        for path in res.into_diagnostic()?? {
+                            paths.push(path.clone());
+                            propagated.insert(path);
+                        }
+                    }
+                    Result::<_>::Ok(())
+                })
+                .await?;
+        }
+
+        Ok(propagated)
+    }
+
+    pub fn canonicalize_subpath(
+        &self,
+        path: &StorePath,
+        subpath: impl AsRef<Utf8Path>,
+    ) -> Option<Utf8PathBuf> {
+        let path = path.as_ref().join(subpath);
+        self.join(&path)
+            .exists()
+            .then(|| Utf8Path::new("/nix/store").join(path))
     }
 }

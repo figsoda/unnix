@@ -7,21 +7,22 @@ use crate::{cli::EnvArgs, state::State};
 
 pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
     state.lock().await?;
-    let paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
+    let mut paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
+
+    state.pull(paths.clone()).await?;
+    paths.extend(state.store.propagated_build_inputs(paths.clone()).await?);
 
     let mut path_var: OsString = paths
         .iter()
-        .flat_map(|path| state.canonicalize_subpath(path, "bin"))
+        .flat_map(|path| state.store.canonicalize_subpath(path, "bin"))
         .join(":")
         .into();
 
     let mut pkg_config_path: OsString = paths
         .iter()
-        .flat_map(|path| state.canonicalize_subpath(path, "lib/pkgconfig"))
+        .flat_map(|path| state.store.canonicalize_subpath(path, "lib/pkgconfig"))
         .join(":")
         .into();
-
-    state.pull(paths).await?;
 
     if let Some(paths) = var_os("PATH") {
         path_var.push(":");

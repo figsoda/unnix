@@ -19,8 +19,8 @@ pub struct State {
     pub dir: Utf8PathBuf,
     pub lockfile: Lockfile,
     pub manifest: Manifest,
+    pub store: Arc<Store>,
     pub system: System,
-    store: Arc<Store>,
 }
 
 impl State {
@@ -133,18 +133,6 @@ impl State {
         }
 
         Ok(())
-    }
-
-    pub fn canonicalize_subpath(
-        &self,
-        path: &StorePath,
-        subpath: impl AsRef<Utf8Path>,
-    ) -> Option<Utf8PathBuf> {
-        let path = path.as_ref().join(subpath);
-        self.store
-            .join(&path)
-            .exists()
-            .then(|| Utf8Path::new("/nix/store").join(path))
     }
 
     pub fn bwrap(&self) -> Command {
