@@ -86,8 +86,6 @@ impl State {
                     continue;
                 }
 
-                span.pb_inc_length(1);
-
                 let caches = self.manifest.caches.clone();
                 let client = client.clone();
                 let span = span.clone();
@@ -101,6 +99,8 @@ impl State {
                         tx.send(references).map_err(|_| miette!("channel closed"))?;
                         return Ok(());
                     }
+
+                    span.pb_inc_length(1);
 
                     let (cache, narinfo) = query(&client, &path, caches).await?;
 
