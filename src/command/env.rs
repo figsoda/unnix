@@ -18,11 +18,10 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
         .join(":")
         .into();
 
-    let mut nix_ldflags: OsString = paths
+    let mut library_path: OsString = paths
         .iter()
         .flat_map(|path| state.store.canonicalize_subpath(path, "lib"))
-        .map(|path| format!("-L{path}"))
-        .join(" ")
+        .join(":")
         .into();
 
     let mut pkg_config_path: OsString = paths
@@ -36,9 +35,9 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
         path_var.push(paths);
     }
 
-    if let Some(paths) = var_os("NIX_LDFLAGS") {
-        nix_ldflags.push(" ");
-        nix_ldflags.push(paths);
+    if let Some(paths) = var_os("LIBRARY_PATH") {
+        library_path.push(":");
+        library_path.push(paths);
     }
 
     if let Some(paths) = var_os("PKG_CONFIG_PATH") {
@@ -48,7 +47,7 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
 
     let mut cmd = state.bwrap();
     cmd.env("PATH", path_var)
-        .env("NIX_LDFLAGS", nix_ldflags)
+        .env("LIBRARY_PATH", library_path)
         .env("PKG_CONFIG_PATH", pkg_config_path);
 
     if let Some(args) = args.command {
