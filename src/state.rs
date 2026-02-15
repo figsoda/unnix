@@ -93,7 +93,7 @@ impl State {
                 let tx = tx.clone();
 
                 tasks.spawn(async move {
-                    if store.join(&path).exists()
+                    if store.join(&path).symlink_metadata().is_ok()
                         && let Some(references) = store.get_references(path.hash()).await?
                     {
                         tx.send(references).map_err(|_| miette!("channel closed"))?;

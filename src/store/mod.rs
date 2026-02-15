@@ -65,7 +65,7 @@ impl Store {
         compression: Compression,
     ) -> Result<()> {
         let out = self.join(path);
-        if out.exists() {
+        if out.symlink_metadata().is_ok() {
             return Ok(());
         }
 
@@ -74,7 +74,7 @@ impl Store {
             sleep(Duration::from_millis(250)).await;
         }
 
-        if out.exists() {
+        if out.symlink_metadata().is_ok() {
             return Ok(());
         }
 
