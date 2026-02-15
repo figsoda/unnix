@@ -15,6 +15,7 @@ use crate::{
 pub struct Manifest {
     pub packages: HashMap<String, Package>,
     pub caches: Vec<Arc<Url>>,
+    pub env: HashMap<String, String>,
 }
 
 impl Manifest {
@@ -74,6 +75,17 @@ impl Manifest {
                 .map(|cache| Arc::new(cache.url)),
         );
 
-        Ok(Self { packages, caches })
+        let env = manifest
+            .env
+            .inner
+            .into_iter()
+            .map(|var| (var.name, var.value))
+            .collect();
+
+        Ok(Self {
+            packages,
+            caches,
+            env,
+        })
     }
 }

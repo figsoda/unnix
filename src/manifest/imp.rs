@@ -8,6 +8,8 @@ pub struct Manifest {
     pub packages: Packages,
     #[knus(child, default = Caches { default: true, inner: Vec::new() })]
     pub caches: Caches,
+    #[knus(child, default)]
+    pub env: Env,
     #[knus(children)]
     pub sources: Vec<Source>,
 }
@@ -42,6 +44,20 @@ pub struct Caches {
 pub struct Cache {
     #[knus(node_name)]
     pub url: Url,
+}
+
+#[derive(Decode, Default)]
+pub struct Env {
+    #[knus(children)]
+    pub inner: Vec<Var>,
+}
+
+#[derive(Decode)]
+pub struct Var {
+    #[knus(node_name)]
+    pub name: String,
+    #[knus(argument)]
+    pub value: String,
 }
 
 #[derive(Decode)]

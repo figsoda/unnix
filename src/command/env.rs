@@ -1,7 +1,8 @@
 use std::{env::var_os, ffi::OsString, os::unix::process::CommandExt};
 
 use itertools::Itertools;
-use miette::{Report, Result};
+use miette::{IntoDiagnostic, Report, Result};
+use strfmt::strfmt;
 
 use crate::{cli::EnvArgs, state::State};
 
@@ -49,6 +50,23 @@ pub async fn env(state: &mut State, args: EnvArgs) -> Result<()> {
     cmd.env("PATH", path_var)
         .env("LIBRARY_PATH", library_path)
         .env("PKG_CONFIG_PATH", pkg_config_path);
+
+    let pkgs = state
+        .lockfile
+        .systems
+        .get(&state.system)
+        .iter()
+        .flat_map(|pkgs| {
+            pkgs.iter().flat_map(|(name, pkg)| {
+                pkg.outputs.iter().map(move |(output, path)| {
+                    (format!("{name}.{output}"), format!("/nix/store/{path}"))
+                })
+            })
+        })
+        .collect();
+    for (name, value) in &state.manifest.env {
+        cmd.env(name, strfmt(value, &pkgs).into_diagnostic()?);
+    }
 
     if let Some(args) = args.command {
         cmd.args(args);
