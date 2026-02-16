@@ -3,6 +3,8 @@ pub mod path;
 
 use std::{
     collections::BTreeSet,
+    env::var_os,
+    ffi::OsString,
     fs::{create_dir_all, rename},
     io::Cursor,
     num::NonZero,
@@ -13,9 +15,9 @@ use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
 };
 use camino::{Utf8Path, Utf8PathBuf};
-use derive_more::Deref;
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
+use itertools::Itertools;
 use miette::{IntoDiagnostic, Result, miette};
 use nix_nar::Decoder;
 use tempfile::TempDir;
@@ -28,10 +30,9 @@ use tokio::{
 
 use crate::store::{nar::Compression, path::StorePath};
 
-#[derive(Clone, Deref)]
+#[derive(Clone)]
 pub struct Store {
-    #[deref]
-    path: Utf8PathBuf,
+    pub path: Utf8PathBuf,
     lock: Utf8PathBuf,
     references: Utf8PathBuf,
 }
@@ -64,7 +65,7 @@ impl Store {
         mut reader: impl AsyncBufRead + Unpin,
         compression: Compression,
     ) -> Result<()> {
-        let out = self.join(path);
+        let out = self.path.join(path);
         if out.symlink_metadata().is_ok() {
             return Ok(());
         }
@@ -128,7 +129,7 @@ impl Store {
         }
 
         spawn_blocking(|| {
-            let tmp = TempDir::with_prefix("unnix").into_diagnostic()?;
+            let tmp = TempDir::with_prefix("unnix-").into_diagnostic()?;
             let tmp = tmp.path().join("out");
 
             Decoder::new(Cursor::new(buf))
@@ -185,7 +186,11 @@ impl Store {
                     continue;
                 }
 
-                let path = self.join(path).join("nix-support/propagated-build-inputs");
+                let path = self
+                    .path
+                    .join(path)
+                    .join("nix-support/propagated-build-inputs");
+
                 tasks.spawn_local_on(
                     async move {
                         let Ok(mut file) = File::open(path).await else {
@@ -216,14 +221,30 @@ impl Store {
         Ok(propagated)
     }
 
-    pub fn canonicalize_subpath(
+    pub fn prefix_env_subpaths(
         &self,
-        path: &StorePath,
-        subpath: impl AsRef<Utf8Path>,
-    ) -> Option<Utf8PathBuf> {
-        let path = path.as_ref().join(subpath);
-        self.join(&path)
-            .exists()
-            .then(|| Utf8Path::new("/nix/store").join(path))
+        name: &str,
+        sep: &str,
+        paths: &[StorePath],
+        subpath: &str,
+    ) -> OsString {
+        let mut paths: OsString = paths
+            .iter()
+            .flat_map(|path| {
+                let path = path.as_ref().join(subpath);
+                self.path
+                    .join(&path)
+                    .exists()
+                    .then(|| Utf8Path::new("/nix/store").join(path))
+            })
+            .join(sep)
+            .into();
+
+        if let Some(old) = var_os(name) {
+            paths.push(sep);
+            paths.push(old);
+        }
+
+        paths
     }
 }

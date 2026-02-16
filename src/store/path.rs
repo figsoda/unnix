@@ -6,9 +6,6 @@ use miette::{Result, bail, miette};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-static STORELESS_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new("^[0-9abcdfghijklmnpqrsvwxyz]{32}-[^/]+$").unwrap());
-
 #[derive(Clone, Debug, Deserialize, Display, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct StorePath(Arc<str>);
 
@@ -20,8 +17,11 @@ impl StorePath {
     }
 
     pub fn from_storeless(path: impl Into<Arc<str>>) -> Result<Self> {
+        static REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("^[0-9abcdfghijklmnpqrsvwxyz]{32}-[^/]+$").unwrap());
+
         let path = path.into();
-        if STORELESS_REGEX.is_match(&path) {
+        if REGEX.is_match(&path) {
             Ok(Self(path))
         } else {
             bail!("invalid path {path:?}");

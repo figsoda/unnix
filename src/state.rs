@@ -93,7 +93,7 @@ impl State {
                 let tx = tx.clone();
 
                 tasks.spawn(async move {
-                    if store.join(&path).symlink_metadata().is_ok()
+                    if store.path.join(&path).symlink_metadata().is_ok()
                         && let Some(references) = store.get_references(path.hash()).await?
                     {
                         tx.send(references).map_err(|_| miette!("channel closed"))?;
@@ -143,12 +143,10 @@ impl State {
 
         if Utf8Path::new("/nix/store").is_dir() {
             cmd.arg("--overlay-src").arg("/nix/store");
-            cmd.arg("--overlay-src").arg(self.store.as_os_str());
+            cmd.arg("--overlay-src").arg(&self.store.path);
             cmd.arg("--ro-overlay").arg("/nix/store");
         } else {
-            cmd.arg("--ro-bind")
-                .arg(self.store.as_os_str())
-                .arg("/nix/store");
+            cmd.arg("--ro-bind").arg(&self.store.path).arg("/nix/store");
         }
 
         cmd.arg("--");
