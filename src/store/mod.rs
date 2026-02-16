@@ -174,7 +174,7 @@ impl Store {
         &self,
         mut paths: Vec<StorePath>,
     ) -> Result<BTreeSet<StorePath>> {
-        let mut propagated: BTreeSet<_> = paths.iter().cloned().collect();
+        let mut propagated = BTreeSet::new();
         let mut checked = BTreeSet::new();
 
         let local = LocalSet::new();
