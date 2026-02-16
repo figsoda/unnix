@@ -39,14 +39,14 @@ url = "2.5.8"
 [dependencies.async-compression]
 version = "0.4.39"
 features = [
-    "brotli",
-    "bzip2",
-    "gzip",
-    "lz4",
-    "lzma",
-    "tokio",
-    "xz-parallel",
-    "zstd",
+  "brotli",
+  "bzip2",
+  "gzip",
+  "lz4",
+  "lzma",
+  "tokio",
+  "xz-parallel",
+  "zstd",
 ]
 
 [dependencies.clap]
