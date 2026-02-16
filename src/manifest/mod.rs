@@ -49,9 +49,7 @@ impl Manifest {
                 let name = pkg.name;
                 let pkg = Package {
                     attribute: pkg.attribute.unwrap_or_else(|| name.clone()),
-                    outputs: pkg
-                        .outputs
-                        .map(|outputs| outputs.split(",").map(ToOwned::to_owned).collect()),
+                    outputs: pkg.outputs,
                     source: sources
                         .get(&pkg.source)
                         .ok_or_else(|| miette!("source {:?} not found", pkg.source))?

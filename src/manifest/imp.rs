@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use derive_more::From;
 use knus::Decode;
 use url::Url;
@@ -26,10 +28,10 @@ pub struct Package {
     pub name: String,
     #[knus(property)]
     pub attribute: Option<String>,
-    #[knus(property)]
-    pub outputs: Option<String>,
     #[knus(property, default = "default".into())]
     pub source: String,
+    #[knus(arguments)]
+    pub outputs: BTreeSet<String>,
 }
 
 #[derive(Decode)]

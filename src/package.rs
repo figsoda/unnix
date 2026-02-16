@@ -15,7 +15,7 @@ use crate::source::Source;
 #[derive(Debug, Serialize)]
 pub struct Package {
     pub attribute: String,
-    pub outputs: Option<BTreeSet<String>>,
+    pub outputs: BTreeSet<String>,
     pub source: Rc<Source>,
 }
 

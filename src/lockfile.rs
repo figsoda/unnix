@@ -104,8 +104,8 @@ impl Lockfile {
 
     pub async fn fetch(&mut self, system: System, name: String, pkg: &Package) -> Result<()> {
         let mut outputs = pkg.source.get_outputs(&pkg.attribute, system).await?;
-        if let Some(names) = &pkg.outputs {
-            outputs.retain(|name, _| names.contains(name));
+        if !pkg.outputs.is_empty() {
+            outputs.retain(|name, _| pkg.outputs.contains(name));
         }
 
         self.systems.entry(system).or_default().insert(
