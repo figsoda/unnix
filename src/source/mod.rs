@@ -1,6 +1,6 @@
 pub mod hydra;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use enum_dispatch::enum_dispatch;
 use miette::{IntoDiagnostic, Result};
@@ -15,7 +15,7 @@ pub trait GetOutputs {
         &self,
         attribute: &str,
         system: System,
-    ) -> Result<HashMap<String, StorePath>>;
+    ) -> Result<BTreeMap<String, StorePath>>;
 }
 
 #[derive(Debug, Serialize)]

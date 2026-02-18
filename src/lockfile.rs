@@ -1,7 +1,8 @@
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs::File,
     io::{Read, Write},
+    rc::Rc,
 };
 
 use camino::Utf8Path;
@@ -26,8 +27,8 @@ type Version = MustBe!(0u64);
 #[serde(deny_unknown_fields)]
 pub struct Lockfile {
     version: Version,
-    #[serde_as(as = "HashMap<DisplayFromStr, _>")]
-    pub systems: HashMap<System, HashMap<String, PackageLock>>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
+    pub systems: BTreeMap<System, BTreeMap<Rc<str>, PackageLock>>,
 }
 
 #[serde_as]
@@ -36,7 +37,7 @@ pub struct Lockfile {
 pub struct PackageLock {
     #[serde_as(as = "DisplayFromStr")]
     hash: Base64Hash,
-    pub outputs: HashMap<String, StorePath>,
+    pub outputs: BTreeMap<String, StorePath>,
 }
 
 #[derive(Debug, Diagnostic, Error)]
@@ -85,7 +86,7 @@ impl Lockfile {
         &mut self,
         lockfile: &Lockfile,
         system: System,
-        name: String,
+        name: Rc<str>,
         pkg: &Package,
     ) -> Result<()> {
         let hash = pkg.hash()?;
@@ -102,7 +103,7 @@ impl Lockfile {
         }
     }
 
-    pub async fn fetch(&mut self, system: System, name: String, pkg: &Package) -> Result<()> {
+    pub async fn fetch(&mut self, system: System, name: Rc<str>, pkg: &Package) -> Result<()> {
         let mut outputs = pkg.source.get_outputs(&pkg.attribute, system).await?;
         if !pkg.outputs.is_empty() {
             outputs.retain(|name, _| pkg.outputs.contains(name));

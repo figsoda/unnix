@@ -36,16 +36,16 @@ impl State {
 
     pub async fn lock(&mut self) -> Result<()> {
         let old = Lockfile::from_dir(&self.dir)?;
-        for (name, pkg) in &self.manifest.packages {
-            self.lockfile
-                .add(&old, self.system, name.clone(), pkg)
-                .await?;
+        for (system, manifest) in &self.manifest.systems {
+            for (name, pkg) in &manifest.packages {
+                self.lockfile.add(&old, *system, name.clone(), pkg).await?;
+            }
         }
         self.lockfile.write_dir(&self.dir)?;
         Ok(())
     }
 
-    pub async fn pull(&mut self, paths: Vec<StorePath>) -> Result<()> {
+    pub async fn pull(&self, paths: Vec<StorePath>) -> Result<()> {
         let span = info_span!("progress");
         span.pb_set_length(0);
         let _guard = span.enter();
@@ -81,12 +81,13 @@ impl State {
                 break;
             };
 
+            let caches = &self.manifest.systems[&self.system].caches;
             for path in paths {
                 if !downloaded.insert(path.clone()) {
                     continue;
                 }
 
-                let caches = self.manifest.caches.clone();
+                let caches = caches.clone();
                 let client = client.clone();
                 let span = span.clone();
                 let store = self.store.clone();

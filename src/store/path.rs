@@ -1,8 +1,8 @@
 use std::sync::{Arc, LazyLock};
 
 use camino::Utf8Path;
-use derive_more::Display;
 use miette::{Result, bail, miette};
+use parse_display::Display;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 

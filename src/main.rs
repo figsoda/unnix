@@ -49,20 +49,20 @@ async fn main() -> Result<()> {
 
     let args = Args::parse();
     let manifest = Manifest::from_dir(".".into())?;
-    let mut state = State::new(manifest)?;
+    let state = State::new(manifest)?;
 
     match args.command {
         Command::Cache => {
-            command::cache(&mut state).await?;
+            command::cache(state).await?;
         }
         Command::Env(args) => {
-            command::env(&mut state, args).await?;
+            command::env(state, args).await?;
         }
         Command::Lock => {
-            command::lock(&mut state).await?;
+            command::lock(state).await?;
         }
         Command::Update => {
-            command::update(&mut state).await?;
+            command::update(state).await?;
         }
     }
 

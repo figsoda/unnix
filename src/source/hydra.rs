@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use miette::{IntoDiagnostic, Result};
 use reqwest::{Client, Method, header::ACCEPT};
@@ -21,7 +21,7 @@ pub struct Jobset {
 
 #[derive(Deserialize)]
 struct Build {
-    buildoutputs: HashMap<String, Output>,
+    buildoutputs: BTreeMap<String, Output>,
 }
 
 #[derive(Deserialize)]
@@ -34,7 +34,7 @@ impl GetOutputs for Jobset {
         &self,
         attribute: &str,
         system: System,
-    ) -> Result<HashMap<String, StorePath>> {
+    ) -> Result<BTreeMap<String, StorePath>> {
         let url = format!(
             "{}/job/{}/{}/{}/latest-for/{system}",
             self.base,
