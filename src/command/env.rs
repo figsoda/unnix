@@ -1,4 +1,4 @@
-use std::{env::var_os, os::unix::process::CommandExt};
+use std::{collections::HashMap, env::var_os, os::unix::process::CommandExt};
 
 use miette::{IntoDiagnostic, Report, Result, bail};
 use strfmt::strfmt;
@@ -12,7 +12,7 @@ pub async fn env(mut state: State, args: EnvArgs) -> Result<()> {
         bail!("system {} not supported by the manifest", state.system);
     };
 
-    let mut paths: Vec<_> = state.lockfile.outputs(&state.system).collect();
+    let mut paths = state.lockfile.collect_outputs(&state.system);
     state.pull(paths.clone()).await?;
     paths.extend(state.store.propagated_build_inputs(paths.clone()).await?);
 
@@ -32,14 +32,15 @@ pub async fn env(mut state: State, args: EnvArgs) -> Result<()> {
         .env("LIBRARY_PATH", library_path)
         .env("PKG_CONFIG_PATH", pkg_config_path);
 
-    let pkgs = state.lockfile.systems[&state.system]
-        .iter()
-        .flat_map(|(name, pkg)| {
+    let mut pkgs = HashMap::new();
+    for entry in &state.lockfile.systems[&state.system].inner {
+        let (name, pkg) = entry.pair();
+        pkgs.extend(
             pkg.outputs.iter().map(move |(output, path)| {
                 (format!("{name}.{output}"), format!("/nix/store/{path}"))
-            })
-        })
-        .collect();
+            }),
+        );
+    }
     for (name, value) in &manifest.env {
         cmd.env(name.as_ref(), strfmt(value, &pkgs).into_diagnostic()?);
     }

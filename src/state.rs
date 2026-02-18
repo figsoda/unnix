@@ -3,7 +3,12 @@ use std::{collections::BTreeSet, io::Cursor, process::Command, sync::Arc};
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
-use tokio::{select, sync::mpsc, task::JoinSet, try_join};
+use tokio::{
+    select,
+    sync::mpsc,
+    task::{JoinSet, LocalSet},
+    try_join,
+};
 use tracing::{debug, info, info_span, warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt;
 use url::Url;
@@ -36,13 +41,39 @@ impl State {
 
     pub async fn lock(&mut self) -> Result<()> {
         let old = Lockfile::from_dir(&self.dir)?;
-        for (system, manifest) in &self.manifest.systems {
+        let local = LocalSet::new();
+        let mut tasks = JoinSet::new();
+
+        for (&system, manifest) in &self.manifest.systems {
+            let lockfile = self.lockfile.systems.entry(system).or_default().clone();
             for (name, pkg) in &manifest.packages {
-                self.lockfile.add(&old, *system, name.clone(), pkg).await?;
+                if let Some(old) = old.systems.get(&system)
+                    && let Some(old) = old.inner.get(name)
+                    && old.hash == pkg.hash()?
+                {
+                    lockfile.inner.insert(name.clone(), old.clone());
+                } else {
+                    let lockfile = lockfile.clone();
+                    let name = name.clone();
+                    let pkg = pkg.clone();
+                    tasks.spawn_local_on(
+                        async move { lockfile.fetch(system, name, &pkg).await },
+                        &local,
+                    );
+                }
             }
         }
-        self.lockfile.write_dir(&self.dir)?;
-        Ok(())
+
+        local
+            .run_until(async {
+                while let Some(res) = tasks.join_next().await {
+                    res.into_diagnostic()??;
+                }
+                Result::<_>::Ok(())
+            })
+            .await?;
+
+        self.lockfile.write_dir(&self.dir)
     }
 
     pub async fn pull(&self, paths: Vec<StorePath>) -> Result<()> {

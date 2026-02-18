@@ -6,6 +6,7 @@ use std::{
 };
 
 use camino::Utf8Path;
+use dashmap::DashMap;
 use miette::{Diagnostic, IntoDiagnostic, NamedSource, Report, Result, SourceOffset};
 use monostate::MustBe;
 use serde::{Deserialize, Serialize};
@@ -28,7 +29,13 @@ type Version = MustBe!(0u64);
 pub struct Lockfile {
     version: Version,
     #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
-    pub systems: BTreeMap<System, BTreeMap<Rc<str>, PackageLock>>,
+    pub systems: BTreeMap<System, Rc<SystemLockfile>>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct SystemLockfile {
+    #[serde(flatten)]
+    pub inner: DashMap<Rc<str>, PackageLock>,
 }
 
 #[serde_as]
@@ -36,7 +43,7 @@ pub struct Lockfile {
 #[serde(deny_unknown_fields)]
 pub struct PackageLock {
     #[serde_as(as = "DisplayFromStr")]
-    hash: Base64Hash,
+    pub hash: Base64Hash,
     pub outputs: BTreeMap<String, StorePath>,
 }
 
@@ -82,34 +89,25 @@ impl Lockfile {
         Ok(())
     }
 
-    pub async fn add(
-        &mut self,
-        lockfile: &Lockfile,
-        system: System,
-        name: Rc<str>,
-        pkg: &Package,
-    ) -> Result<()> {
-        let hash = pkg.hash()?;
-        if let Some(pkg) = lockfile.get(system, &name)
-            && pkg.hash == hash
-        {
-            self.systems
-                .entry(system)
-                .or_default()
-                .insert(name, pkg.clone());
-            Ok(())
-        } else {
-            self.fetch(system, name, pkg).await
+    pub fn collect_outputs(&self, system: &System) -> Vec<StorePath> {
+        let mut outputs = Vec::new();
+        if let Some(packages) = self.systems.get(system) {
+            for pkg in &packages.inner {
+                outputs.extend(pkg.value().outputs.values().cloned());
+            }
         }
+        outputs
     }
+}
 
-    pub async fn fetch(&mut self, system: System, name: Rc<str>, pkg: &Package) -> Result<()> {
+impl SystemLockfile {
+    pub async fn fetch(&self, system: System, name: Rc<str>, pkg: &Package) -> Result<()> {
         let mut outputs = pkg.source.get_outputs(&pkg.attribute, system).await?;
         if !pkg.outputs.is_empty() {
             outputs.retain(|name, _| pkg.outputs.contains(name));
         }
 
-        self.systems.entry(system).or_default().insert(
+        self.inner.insert(
             name,
             PackageLock {
                 hash: pkg.hash()?,
@@ -118,18 +116,5 @@ impl Lockfile {
         );
 
         Ok(())
-    }
-
-    pub fn outputs(&self, system: &System) -> impl Iterator<Item = StorePath> {
-        self.systems
-            .get(system)
-            .into_iter()
-            .flat_map(|packages| packages.values())
-            .flat_map(|pkg| pkg.outputs.values())
-            .cloned()
-    }
-
-    pub fn get(&self, system: System, name: &str) -> Option<&PackageLock> {
-        self.systems.get(&system)?.get(name)
     }
 }
