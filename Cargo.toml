@@ -39,7 +39,7 @@ tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 url = "2.5.8"
 
 [dependencies.async-compression]
-version = "0.4.39"
+version = "0.4.40"
 features = [
   "brotli",
   "bzip2",
