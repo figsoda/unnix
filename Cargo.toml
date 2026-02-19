@@ -3,13 +3,13 @@ name = "unnix"
 version = "0.1.0"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2024"
-description = ""
+description = "Leverage the power of Nix without installing Nix"
 readme = "README.md"
 homepage = "https://github.com/figsoda/unnix"
 repository = "https://github.com/figsoda/unnix"
 license = "MPL-2.0"
-keywords = []
-categories = []
+keywords = ["ci", "cli", "hydra", "nix"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 blake3 = "1.8.3"
