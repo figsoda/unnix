@@ -16,6 +16,5 @@ pub enum Command {
 
 #[derive(Parser)]
 pub struct EnvArgs {
-    #[arg(short, long)]
     pub command: Option<Vec<String>>,
 }
