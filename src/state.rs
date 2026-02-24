@@ -1,4 +1,9 @@
-use std::{collections::BTreeSet, io::Cursor, process::Command, sync::Arc};
+use std::{
+    collections::BTreeSet,
+    io::Cursor,
+    process::Command,
+    sync::{Arc, LazyLock},
+};
 
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail, miette};
@@ -27,6 +32,8 @@ pub struct State {
     pub store: Arc<Store>,
     pub system: System,
 }
+
+pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(Client::new);
 
 impl State {
     pub fn new(manifest: Manifest) -> Result<Self> {
@@ -84,7 +91,6 @@ impl State {
         let (tx, mut rx) = mpsc::unbounded_channel();
         tx.send(paths).map_err(|_| miette!("channel closed"))?;
 
-        let client = Client::new();
         let mut downloaded = BTreeSet::new();
         let mut tasks = JoinSet::new();
 
@@ -119,7 +125,6 @@ impl State {
                 }
 
                 let caches = caches.clone();
-                let client = client.clone();
                 let span = span.clone();
                 let store = self.store.clone();
                 let tx = tx.clone();
@@ -134,7 +139,7 @@ impl State {
 
                     span.pb_inc_length(1);
 
-                    let (cache, narinfo) = query(&client, &path, caches).await?;
+                    let (cache, narinfo) = query(&path, caches).await?;
 
                     info!("downloading {path} from {cache}");
                     let nar = cache.join(&narinfo.url).into_diagnostic()?;
@@ -143,7 +148,7 @@ impl State {
 
                     let put_references = store.put_references(path.hash(), &narinfo.references);
                     let unpack_nar = async {
-                        let nar = client
+                        let nar = HTTP_CLIENT
                             .get(nar)
                             .send()
                             .await
@@ -186,14 +191,10 @@ impl State {
     }
 }
 
-async fn query(
-    client: &Client,
-    path: &StorePath,
-    caches: Vec<Arc<Url>>,
-) -> Result<(Arc<Url>, Narinfo)> {
+async fn query(path: &StorePath, caches: Vec<Arc<Url>>) -> Result<(Arc<Url>, Narinfo)> {
     for cache in caches {
         debug!("checking {path} on {cache}");
-        match query_one(client, path.hash(), &cache).await {
+        match query_one(path.hash(), &cache).await {
             Ok(Some(narinfo)) => {
                 return Ok((cache, Narinfo::parse(&narinfo)?));
             }
@@ -207,8 +208,8 @@ async fn query(
     bail!("{path} could not be found in any cache");
 }
 
-async fn query_one(client: &Client, hash: &str, cache: &Url) -> Result<Option<String>> {
-    let res = client
+async fn query_one(hash: &str, cache: &Url) -> Result<Option<String>> {
+    let res = HTTP_CLIENT
         .get(cache.join(&format!("{hash}.narinfo")).into_diagnostic()?)
         .send()
         .await

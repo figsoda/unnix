@@ -1,12 +1,13 @@
 use std::collections::BTreeMap;
 
 use miette::{IntoDiagnostic, Result};
-use reqwest::{Client, Method, header::ACCEPT};
+use reqwest::{Method, header::ACCEPT};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
 use crate::{
     source::{GetOutputs, format},
+    state::HTTP_CLIENT,
     store::path::StorePath,
     system::System,
 };
@@ -45,7 +46,7 @@ impl GetOutputs for Jobset {
 
         debug!(url);
 
-        let build: Build = Client::new()
+        let build: Build = HTTP_CLIENT
             .request(Method::GET, url)
             .header(ACCEPT, "application/json")
             .send()
