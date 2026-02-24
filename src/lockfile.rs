@@ -47,16 +47,6 @@ pub struct PackageLock {
     pub outputs: BTreeMap<String, StorePath>,
 }
 
-#[derive(Debug, Diagnostic, Error)]
-#[error("failed to parse JSON file")]
-struct SerdeJsonError {
-    error: String,
-    #[source_code]
-    file: NamedSource<String>,
-    #[label("{error}")]
-    location: SourceOffset,
-}
-
 impl Lockfile {
     pub fn from_dir(path: &Utf8Path) -> Result<Self> {
         let path = path.join("unnix.lock.json");
@@ -73,11 +63,25 @@ impl Lockfile {
             if let Some(i) = error.rfind(" at line ") {
                 error.truncate(i);
             }
-            Report::new(SerdeJsonError {
-                error,
-                file: NamedSource::new(path, text),
-                location,
-            })
+            Report::new(
+                #[allow(unused_assignments)]
+                {
+                    #[derive(Debug, Diagnostic, Error)]
+                    #[error("failed to parse JSON file")]
+                    struct SerdeJsonError {
+                        error: String,
+                        #[source_code]
+                        file: NamedSource<String>,
+                        #[label("{error}")]
+                        location: SourceOffset,
+                    }
+                    SerdeJsonError {
+                        error,
+                        file: NamedSource::new(path, text),
+                        location,
+                    }
+                },
+            )
         })
     }
 
