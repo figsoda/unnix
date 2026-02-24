@@ -33,7 +33,12 @@ pub struct State {
     pub system: System,
 }
 
-pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(Client::new);
+pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
+    Client::builder()
+        .user_agent(concat!("unnix/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .unwrap()
+});
 
 impl State {
     pub fn new(manifest: Manifest) -> Result<Self> {
