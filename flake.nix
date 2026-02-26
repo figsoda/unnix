@@ -18,7 +18,12 @@
       ];
 
       perSystem =
-        { pkgs, ... }:
+        {
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
         let
           inherit (pkgs)
             callPackage
@@ -35,6 +40,13 @@
             default = callPackage ./package.nix { };
             static = pkgsStatic.callPackage ./package.nix { };
           };
+
+          checks =
+            let
+              devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") config.devShells;
+              packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") config.packages;
+            in
+            devShells // packages;
         };
     };
 }
