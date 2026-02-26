@@ -29,6 +29,7 @@
             callPackage
             mkShell
             pkgsStatic
+            stdenv
             ;
         in
         {
@@ -38,6 +39,8 @@
 
           packages = {
             default = callPackage ./package.nix { };
+          }
+          // stdenv.isLinux {
             static = pkgsStatic.callPackage ./package.nix { };
           };
 
