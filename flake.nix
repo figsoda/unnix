@@ -40,7 +40,7 @@
           packages = {
             default = callPackage ./package.nix { };
           }
-          // stdenv.isLinux {
+          // lib.optionalAttrs stdenv.isLinux {
             static = pkgsStatic.callPackage ./package.nix { };
           };
 
