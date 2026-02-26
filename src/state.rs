@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, HashMap},
     io::Cursor,
     process::Command,
     sync::{Arc, LazyLock},
@@ -8,6 +8,7 @@ use std::{
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
+use strfmt::strfmt;
 use tokio::{
     select,
     sync::mpsc,
@@ -175,6 +176,45 @@ impl State {
         }
 
         Ok(())
+    }
+
+    pub async fn env(&self) -> Result<Vec<(&str, String)>> {
+        let Some(manifest) = self.manifest.systems.get(&self.system) else {
+            bail!("system {} not supported by the manifest", self.system);
+        };
+
+        let mut paths = self.lockfile.collect_outputs(&self.system);
+        self.pull(paths.clone()).await?;
+        paths.extend(self.store.propagated_build_inputs(paths.clone()).await?);
+
+        let path = self.store.prefix_env_subpaths("PATH", ":", &paths, "bin")?;
+
+        let library_path = self
+            .store
+            .prefix_env_subpaths("LIBRARY_PATH", ":", &paths, "lib")?;
+
+        let pkg_config_path =
+            self.store
+                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", &paths, "lib/pkgconfig")?;
+
+        let mut env = vec![
+            ("PATH", path),
+            ("LIBRARY_PATH", library_path),
+            ("PKG_CONFIG_PATH", pkg_config_path),
+        ];
+
+        let mut pkgs = HashMap::new();
+        for entry in &self.lockfile.systems[&self.system].inner {
+            let (name, pkg) = entry.pair();
+            pkgs.extend(pkg.outputs.iter().map(move |(output, path)| {
+                (format!("{name}.{output}"), format!("/nix/store/{path}"))
+            }));
+        }
+        for (name, value) in &manifest.env {
+            env.push((name.as_ref(), strfmt(value, &pkgs).into_diagnostic()?));
+        }
+
+        Ok(env)
     }
 
     pub fn bwrap(&self) -> Command {

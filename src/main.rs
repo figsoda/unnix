@@ -61,6 +61,9 @@ async fn main() -> Result<()> {
         Command::Lock => {
             command::lock(state).await?;
         }
+        Command::Print(args) => {
+            command::print(state, args).await?;
+        }
         Command::Update => {
             command::update(state).await?;
         }

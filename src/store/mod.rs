@@ -3,8 +3,7 @@ pub mod path;
 
 use std::{
     collections::BTreeSet,
-    env::var_os,
-    ffi::OsString,
+    env::{VarError, var},
     fs::{create_dir_all, rename},
     io::Cursor,
     num::NonZero,
@@ -18,7 +17,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
 use itertools::Itertools;
-use miette::{IntoDiagnostic, Result, miette};
+use miette::{IntoDiagnostic, Result, bail, miette};
 use nix_nar::Decoder;
 use tempfile::TempDir;
 use tokio::{
@@ -227,8 +226,8 @@ impl Store {
         sep: &str,
         paths: &[StorePath],
         subpath: &str,
-    ) -> OsString {
-        let mut paths: OsString = paths
+    ) -> Result<String> {
+        let mut paths = paths
             .iter()
             .flat_map(|path| {
                 let path = path.as_ref().join(subpath);
@@ -237,14 +236,19 @@ impl Store {
                     .exists()
                     .then(|| Utf8Path::new("/nix/store").join(path))
             })
-            .join(sep)
-            .into();
+            .join(sep);
 
-        if let Some(old) = var_os(name) {
-            paths.push(sep);
-            paths.push(old);
+        match var(name) {
+            Ok(old) => {
+                paths.push_str(sep);
+                paths.push_str(&old);
+            }
+            Err(VarError::NotPresent) => {}
+            Err(e) => {
+                bail!(e);
+            }
         }
 
-        paths
+        Ok(paths)
     }
 }
