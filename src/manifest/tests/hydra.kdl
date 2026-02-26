@@ -1,0 +1,17 @@
+packages {
+  a
+  b source="c"
+}
+
+hydra "default" {
+  base "d"
+  project "e"
+  jobset "f"
+}
+
+hydra "c" {
+  base "g"
+  project "h"
+  jobset "i"
+  job "j"
+}

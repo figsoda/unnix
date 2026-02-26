@@ -1,4 +1,5 @@
 mod imp;
+mod tests;
 
 use std::{collections::BTreeMap, fs::read_to_string, rc::Rc, sync::Arc};
 
@@ -28,7 +29,11 @@ impl Manifest {
     pub fn from_dir(path: &Utf8Path) -> Result<Self> {
         let path = path.join("unnix.kdl");
         let text = read_to_string(&path).into_diagnostic()?;
-        let manifest: imp::Manifest = knus::parse(&path, &text)?;
+        Self::parse(path, &text)
+    }
+
+    fn parse(path: impl AsRef<str>, text: &str) -> Result<Self> {
+        let manifest: imp::Manifest = knus::parse(path, text)?;
 
         let mut sources: BTreeMap<_, _> =
             manifest.sources.into_iter().map(transform_source).collect();

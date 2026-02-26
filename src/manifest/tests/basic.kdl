@@ -1,0 +1,25 @@
+systems {
+  "aarch64-darwin"
+  "x86_64-linux"
+}
+
+packages {
+  libclang "lib"
+  nix "dev"
+  pkg-config-unwrapped "out"
+}
+
+env {
+  LIBCLANG_PATH "{libclang.lib}/lib"
+}
+
+caches {
+  "https://nix-community.cachix.org"
+}
+
+system "linux" {
+  packages {
+    git "out"
+    mercurial
+  }
+}

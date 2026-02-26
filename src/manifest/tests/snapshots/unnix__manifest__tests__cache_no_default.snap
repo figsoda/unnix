@@ -1,0 +1,32 @@
+---
+source: src/manifest/tests/mod.rs
+expression: "manifest!(\"cache-no-default.kdl\")"
+---
+Manifest {
+    systems: {
+        System {
+            arch: X86_64,
+            kernel: Linux,
+        }: SystemManifest {
+            packages: {},
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "nix-community.cachix.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {},
+        },
+    },
+}

@@ -1,0 +1,202 @@
+---
+source: src/manifest/tests/mod.rs
+expression: "manifest!(\"basic.kdl\")"
+---
+Manifest {
+    systems: {
+        System {
+            arch: Aarch64,
+            kernel: Darwin,
+        }: SystemManifest {
+            packages: {
+                "libclang": Package {
+                    attribute: "libclang",
+                    outputs: {
+                        "lib",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "nix": Package {
+                    attribute: "nix",
+                    outputs: {
+                        "dev",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "pkg-config-unwrapped": Package {
+                    attribute: "pkg-config-unwrapped",
+                    outputs: {
+                        "out",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+            },
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "cache.nixos.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "nix-community.cachix.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {
+                "LIBCLANG_PATH": "{libclang.lib}/lib",
+            },
+        },
+        System {
+            arch: X86_64,
+            kernel: Linux,
+        }: SystemManifest {
+            packages: {
+                "git": Package {
+                    attribute: "git",
+                    outputs: {
+                        "out",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "libclang": Package {
+                    attribute: "libclang",
+                    outputs: {
+                        "lib",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "mercurial": Package {
+                    attribute: "mercurial",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "nix": Package {
+                    attribute: "nix",
+                    outputs: {
+                        "dev",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "pkg-config-unwrapped": Package {
+                    attribute: "pkg-config-unwrapped",
+                    outputs: {
+                        "out",
+                    },
+                    source: Hydra(
+                        Jobset {
+                            base: "https://hydra.nixos.org",
+                            project: "nixpkgs",
+                            jobset: "unstable",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+            },
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "cache.nixos.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "nix-community.cachix.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {
+                "LIBCLANG_PATH": "{libclang.lib}/lib",
+            },
+        },
+    },
+}

@@ -1,0 +1,155 @@
+---
+source: src/manifest/tests/mod.rs
+expression: "manifest!(\"hydra.kdl\")"
+---
+Manifest {
+    systems: {
+        System {
+            arch: Aarch64,
+            kernel: Darwin,
+        }: SystemManifest {
+            packages: {
+                "a": Package {
+                    attribute: "a",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "d",
+                            project: "e",
+                            jobset: "f",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "b": Package {
+                    attribute: "b",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "g",
+                            project: "h",
+                            jobset: "i",
+                            job: "j",
+                        },
+                    ),
+                },
+            },
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "cache.nixos.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {},
+        },
+        System {
+            arch: Aarch64,
+            kernel: Linux,
+        }: SystemManifest {
+            packages: {
+                "a": Package {
+                    attribute: "a",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "d",
+                            project: "e",
+                            jobset: "f",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "b": Package {
+                    attribute: "b",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "g",
+                            project: "h",
+                            jobset: "i",
+                            job: "j",
+                        },
+                    ),
+                },
+            },
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "cache.nixos.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {},
+        },
+        System {
+            arch: X86_64,
+            kernel: Linux,
+        }: SystemManifest {
+            packages: {
+                "a": Package {
+                    attribute: "a",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "d",
+                            project: "e",
+                            jobset: "f",
+                            job: "{attribute}.{system}",
+                        },
+                    ),
+                },
+                "b": Package {
+                    attribute: "b",
+                    outputs: {},
+                    source: Hydra(
+                        Jobset {
+                            base: "g",
+                            project: "h",
+                            jobset: "i",
+                            job: "j",
+                        },
+                    ),
+                },
+            },
+            caches: [
+                Url {
+                    scheme: "https",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Domain(
+                            "cache.nixos.org",
+                        ),
+                    ),
+                    port: None,
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+            ],
+            env: {},
+        },
+    },
+}
