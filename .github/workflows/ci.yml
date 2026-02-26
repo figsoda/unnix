@@ -41,7 +41,7 @@ jobs:
 
   nix:
     name: nix
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
