@@ -60,3 +60,36 @@ jobs:
           tag: ${{ github.ref }}
           file: target/${{ matrix.target }}/release/unnix
           asset_name: unnix-${{ matrix.target }}
+
+  artifacts:
+    name: artifacts
+    needs: create_release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cargo build
+        run: |
+          rustup toolchain install nightly --profile minimal
+          cargo +nightly build
+        env:
+          GENERATE_ARTIFACTS: artifacts
+
+      # https://reproducible-builds.org/docs/archives/
+      - name: Create tarball
+        run: |
+          tar --xz -cf artifacts.tar.xz artifacts \
+            --sort=name \
+            --mtime=@0 \
+            --owner=0 --group=0 --numeric-owner \
+            --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime
+
+      - name: Upload artifacts
+        uses: svenstaro/upload-release-action@v2
+        with:
+          tag: ${{ github.ref }}
+          file: artifacts.tar.xz

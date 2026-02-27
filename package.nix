@@ -1,6 +1,7 @@
 {
   lib,
   rustPlatform,
+  installShellFiles,
   pkg-config,
   xz,
   zstd,
@@ -15,6 +16,7 @@ rustPlatform.buildRustPackage {
     fileset = lib.fileset.unions [
       ./Cargo.lock
       ./Cargo.toml
+      ./build.rs
       ./src
     ];
   };
@@ -24,6 +26,7 @@ rustPlatform.buildRustPackage {
   };
 
   nativeBuildInputs = [
+    installShellFiles
     pkg-config
   ];
 
@@ -33,6 +36,12 @@ rustPlatform.buildRustPackage {
   ];
 
   env = {
+    GENERATE_ARTIFACTS = "artifacts";
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
+
+  postInstall = ''
+    installManPage artifacts/unnix.1
+    installShellCompletion artifacts/unnix.{bash,fish} --zsh artifacts/_unnix
+  '';
 }
