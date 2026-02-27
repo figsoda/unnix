@@ -1,7 +1,7 @@
 systems {
-  "x86_64-linux"
+  x86_64-linux
 }
 
-caches default=false {
+caches default=#false {
   "https://nix-community.cachix.org"
 }

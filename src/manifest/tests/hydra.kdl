@@ -1,17 +1,17 @@
 packages {
   a
-  b source="c"
+  b source=c
 }
 
-hydra "default" {
-  base "d"
-  project "e"
-  jobset "f"
+hydra default {
+  base d
+  project e
+  jobset f
 }
 
-hydra "c" {
-  base "g"
-  project "h"
-  jobset "i"
-  job "j"
+hydra c {
+  base g
+  project h
+  jobset i
+  job j
 }

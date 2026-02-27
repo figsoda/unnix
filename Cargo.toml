@@ -19,7 +19,7 @@ data-encoding = "2.10.0"
 dirs = "6.0.0"
 enum_dispatch = "0.3.13"
 itertools = "0.14.0"
-knus = "3.3.1"
+kdl = "6.5.0"
 miette = { version = "7.6.0", features = ["fancy"] }
 monostate = "1.0.2"
 nix-nar = "0.3.1"

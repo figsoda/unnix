@@ -6,7 +6,7 @@ use super::Manifest;
 
 macro_rules! manifest {
     ($path:literal) => {
-        Manifest::parse($path, include_str!($path)).unwrap()
+        Manifest::parse(include_str!($path)).unwrap()
     };
 }
 

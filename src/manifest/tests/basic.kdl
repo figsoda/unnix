@@ -1,12 +1,12 @@
 systems {
-  "aarch64-darwin"
-  "x86_64-linux"
+  aarch64-darwin
+  x86_64-linux
 }
 
 packages {
-  libclang "lib"
-  nix "dev"
-  pkg-config-unwrapped "out"
+  libclang lib
+  nix dev
+  pkg-config-unwrapped out
 }
 
 env {
@@ -17,9 +17,9 @@ caches {
   "https://nix-community.cachix.org"
 }
 
-system "linux" {
+system linux {
   packages {
-    git "out"
+    git out
     mercurial
   }
 }

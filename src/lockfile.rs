@@ -108,7 +108,7 @@ impl SystemLockfile {
     pub async fn fetch(&self, system: System, name: Rc<str>, pkg: &Package) -> Result<()> {
         let mut outputs = pkg.source.get_outputs(&pkg.attribute, system).await?;
         if !pkg.outputs.is_empty() {
-            outputs.retain(|name, _| pkg.outputs.contains(name));
+            outputs.retain(|name, _| pkg.outputs.contains(name.as_str()));
         }
 
         self.inner.insert(
