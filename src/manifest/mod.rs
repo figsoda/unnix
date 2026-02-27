@@ -342,10 +342,8 @@ impl<'a> SurfaceSystemManifest<'a> {
                                         bail!(entry, "invalid property");
                                     }
                                 }
-                            } else {
-                                if !outputs.insert(str!(entry).into()) {
-                                    bail!(entry, "duplicate output");
-                                }
+                            } else if !outputs.insert(str!(entry).into()) {
+                                bail!(entry, "duplicate output");
                             }
                         }
 
