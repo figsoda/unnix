@@ -49,6 +49,16 @@ pub struct PackageLock {
 
 impl Lockfile {
     pub fn from_dir(path: &Utf8Path) -> Result<Self> {
+        #[derive(Debug, Diagnostic, Error)]
+        #[error("failed to parse JSON file")]
+        struct SerdeJsonError {
+            error: String,
+            #[source_code]
+            file: NamedSource<String>,
+            #[label("{error}")]
+            location: SourceOffset,
+        }
+
         let path = path.join("unnix.lock.json");
         let Ok(mut file) = File::open(&path) else {
             return Ok(Self::default());
@@ -63,25 +73,11 @@ impl Lockfile {
             if let Some(i) = error.rfind(" at line ") {
                 error.truncate(i);
             }
-            Report::new(
-                #[allow(unused_assignments)]
-                {
-                    #[derive(Debug, Diagnostic, Error)]
-                    #[error("failed to parse JSON file")]
-                    struct SerdeJsonError {
-                        error: String,
-                        #[source_code]
-                        file: NamedSource<String>,
-                        #[label("{error}")]
-                        location: SourceOffset,
-                    }
-                    SerdeJsonError {
-                        error,
-                        file: NamedSource::new(path, text),
-                        location,
-                    }
-                },
-            )
+            Report::new(SerdeJsonError {
+                error,
+                file: NamedSource::new(path, text),
+                location,
+            })
         })
     }
 
