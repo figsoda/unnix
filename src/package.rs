@@ -25,7 +25,7 @@ pub struct Base64Hash {
 }
 
 impl Package {
-    pub fn hash(&self) -> Result<Base64Hash> {
+    pub fn key(&self) -> Result<Base64Hash> {
         let mut hasher = Hasher::new();
         serde_json::to_writer(&mut hasher, self).into_diagnostic()?;
         Ok(Base64Hash {

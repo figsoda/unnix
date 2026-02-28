@@ -43,7 +43,7 @@ pub struct SystemLockfile {
 #[serde(deny_unknown_fields)]
 pub struct PackageLock {
     #[serde_as(as = "DisplayFromStr")]
-    pub hash: Base64Hash,
+    pub key: Base64Hash,
     pub outputs: BTreeMap<String, StorePath>,
 }
 
@@ -110,7 +110,7 @@ impl SystemLockfile {
         self.inner.insert(
             name,
             PackageLock {
-                hash: pkg.hash()?,
+                key: pkg.key()?,
                 outputs,
             },
         );

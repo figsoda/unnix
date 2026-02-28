@@ -62,7 +62,7 @@ impl State {
             for (name, pkg) in &manifest.packages {
                 if let Some(old) = old.systems.get(&system)
                     && let Some(old) = old.inner.get(name)
-                    && old.hash == pkg.hash()?
+                    && old.key == pkg.key()?
                 {
                     lockfile.inner.insert(name.clone(), old.clone());
                 } else {
