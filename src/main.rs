@@ -54,6 +54,9 @@ async fn main() -> Result<()> {
         Command::Env(env_args) => {
             command::env(args.global, env_args).await?;
         }
+        Command::Init(init_args) => {
+            command::init(args.global, init_args).await?;
+        }
         Command::Lock => {
             command::lock(args.global).await?;
         }

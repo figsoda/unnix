@@ -14,6 +14,7 @@ pub struct Args {
 pub enum Command {
     Cache,
     Env(EnvArgs),
+    Init(InitArgs),
     Lock,
     Print(PrintArgs),
     Update,
@@ -22,6 +23,15 @@ pub enum Command {
 #[derive(Parser)]
 pub struct EnvArgs {
     pub command: Option<Vec<String>>,
+}
+
+#[derive(Parser)]
+pub struct InitArgs {
+    #[arg(short, long, num_args = 0 ..)]
+    pub packages: Vec<String>,
+
+    #[arg(short, long, num_args = 1 ..)]
+    pub systems: Vec<String>,
 }
 
 #[derive(Parser)]
