@@ -7,10 +7,11 @@ use std::{
 
 use camino::Utf8Path;
 use dashmap::DashMap;
+use itertools::Itertools;
 use miette::{Diagnostic, IntoDiagnostic, NamedSource, Report, Result, SourceOffset};
 use monostate::MustBe;
-use serde::{Deserialize, Serialize};
-use serde_json::{Serializer, ser::PrettyFormatter};
+use serde::{Deserialize, Serialize, Serializer, ser::SerializeMap};
+use serde_json::ser::PrettyFormatter;
 use serde_with::{DisplayFromStr, serde_as};
 use thiserror::Error;
 
@@ -32,7 +33,7 @@ pub struct Lockfile {
     pub systems: BTreeMap<System, Rc<SystemLockfile>>,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct SystemLockfile {
     #[serde(flatten)]
     pub inner: DashMap<Rc<str>, PackageLock>,
@@ -83,7 +84,8 @@ impl Lockfile {
 
     pub fn write_dir(&self, path: &Utf8Path) -> Result<()> {
         let mut file = File::create(path.join("unnix.lock.json")).into_diagnostic()?;
-        let mut ser = Serializer::with_formatter(&mut file, PrettyFormatter::with_indent(b" "));
+        let formatter = PrettyFormatter::with_indent(b" ");
+        let mut ser = serde_json::Serializer::with_formatter(&mut file, formatter);
         self.serialize(&mut ser).into_diagnostic()?;
         writeln!(file).into_diagnostic()?;
         Ok(())
@@ -116,5 +118,21 @@ impl SystemLockfile {
         );
 
         Ok(())
+    }
+}
+
+impl Serialize for SystemLockfile {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let entries: Vec<_> = self
+            .inner
+            .iter()
+            .sorted_by(|x, y| x.key().cmp(y.key()))
+            .collect();
+
+        let mut map = serializer.serialize_map(Some(entries.len()))?;
+        for entry in entries {
+            map.serialize_entry(entry.key(), entry.value())?;
+        }
+        map.end()
     }
 }
