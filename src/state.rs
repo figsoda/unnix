@@ -20,6 +20,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt;
 use url::Url;
 
 use crate::{
+    cli::GlobalArgs,
     lockfile::Lockfile,
     manifest::Manifest,
     store::{Store, nar::Narinfo, path::StorePath},
@@ -42,9 +43,12 @@ pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
 });
 
 impl State {
-    pub fn new(manifest: Manifest) -> Result<Self> {
+    pub fn new(global: GlobalArgs) -> Result<Self> {
+        let dir = global.directory.unwrap_or_else(|| ".".into());
+        let manifest = Manifest::from_dir(&dir)?;
+
         Ok(Self {
-            dir: Utf8PathBuf::from("."),
+            dir,
             lockfile: Lockfile::default(),
             manifest,
             store: Arc::new(Store::new()?),

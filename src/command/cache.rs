@@ -1,8 +1,9 @@
 use miette::Result;
 
-use crate::state::State;
+use crate::{cli::GlobalArgs, state::State};
 
-pub async fn cache(mut state: State) -> Result<()> {
+pub async fn cache(global: GlobalArgs) -> Result<()> {
+    let mut state = State::new(global)?;
     state.lock().await?;
     state
         .pull(state.lockfile.collect_outputs(&state.system))

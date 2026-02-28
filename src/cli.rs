@@ -1,9 +1,13 @@
+use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
+
+    #[command(flatten)]
+    pub global: GlobalArgs,
 }
 
 #[derive(Subcommand)]
@@ -29,4 +33,10 @@ pub struct PrintArgs {
 #[derive(Subcommand)]
 pub enum PrintCommand {
     Env,
+}
+
+#[derive(Parser)]
+pub struct GlobalArgs {
+    #[arg(short, long, global = true)]
+    pub directory: Option<Utf8PathBuf>,
 }

@@ -1,7 +1,7 @@
 use miette::Result;
 
-use crate::state::State;
+use crate::{cli::GlobalArgs, state::State};
 
-pub async fn lock(mut state: State) -> Result<()> {
-    state.lock().await
+pub async fn lock(global: GlobalArgs) -> Result<()> {
+    State::new(global)?.lock().await
 }

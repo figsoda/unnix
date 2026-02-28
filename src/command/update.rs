@@ -1,9 +1,10 @@
 use miette::{IntoDiagnostic, Result};
 use tokio::task::{JoinSet, LocalSet};
 
-use crate::state::State;
+use crate::{cli::GlobalArgs, state::State};
 
-pub async fn update(mut state: State) -> Result<()> {
+pub async fn update(global: GlobalArgs) -> Result<()> {
+    let mut state = State::new(global)?;
     let local = LocalSet::new();
     let mut tasks = JoinSet::new();
 

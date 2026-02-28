@@ -2,9 +2,13 @@ use std::{env::var_os, os::unix::process::CommandExt};
 
 use miette::{Report, Result};
 
-use crate::{cli::EnvArgs, state::State};
+use crate::{
+    cli::{EnvArgs, GlobalArgs},
+    state::State,
+};
 
-pub async fn env(mut state: State, args: EnvArgs) -> Result<()> {
+pub async fn env(global: GlobalArgs, args: EnvArgs) -> Result<()> {
+    let mut state = State::new(global)?;
     state.lock().await?;
 
     let mut cmd = state.bwrap();

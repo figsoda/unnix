@@ -66,6 +66,7 @@ version = "1.49.0"
 features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
+camino = "1.2.2"
 clap = { version = "4.5.60", features = ["derive"] }
 clap_complete = "4.5.66"
 clap_mangen = "0.2.31"

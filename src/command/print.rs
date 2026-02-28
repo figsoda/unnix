@@ -2,11 +2,12 @@ use miette::Result;
 use shell_escape::escape;
 
 use crate::{
-    cli::{PrintArgs, PrintCommand},
+    cli::{GlobalArgs, PrintArgs, PrintCommand},
     state::State,
 };
 
-pub async fn print(mut state: State, args: PrintArgs) -> Result<()> {
+pub async fn print(global: GlobalArgs, args: PrintArgs) -> Result<()> {
+    let mut state = State::new(global)?;
     state.lock().await?;
     match args.command {
         PrintCommand::Env => env(state).await,

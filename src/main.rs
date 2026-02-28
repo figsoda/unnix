@@ -18,11 +18,7 @@ use tracing::level_filters::LevelFilter;
 use tracing_indicatif::{IndicatifLayer, style::ProgressStyle};
 use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{
-    cli::{Args, Command},
-    manifest::Manifest,
-    state::State,
-};
+use crate::cli::{Args, Command};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -51,24 +47,21 @@ async fn main() -> Result<()> {
         .init();
 
     let args = Args::parse();
-    let manifest = Manifest::from_dir(".".into())?;
-    let state = State::new(manifest)?;
-
     match args.command {
         Command::Cache => {
-            command::cache(state).await?;
+            command::cache(args.global).await?;
         }
-        Command::Env(args) => {
-            command::env(state, args).await?;
+        Command::Env(env_args) => {
+            command::env(args.global, env_args).await?;
         }
         Command::Lock => {
-            command::lock(state).await?;
+            command::lock(args.global).await?;
         }
-        Command::Print(args) => {
-            command::print(state, args).await?;
+        Command::Print(print_args) => {
+            command::print(args.global, print_args).await?;
         }
         Command::Update => {
-            command::update(state).await?;
+            command::update(args.global).await?;
         }
     }
 
