@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use miette::{IntoDiagnostic, Result};
+use miette::{IntoDiagnostic, Result, WrapErr, miette};
 use reqwest::{Method, header::ACCEPT};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
@@ -21,8 +21,14 @@ pub struct Jobset {
 }
 
 #[derive(Deserialize)]
-struct Build {
-    buildoutputs: BTreeMap<String, Output>,
+#[serde(untagged)]
+enum Build {
+    Ok {
+        buildoutputs: BTreeMap<String, Output>,
+    },
+    Err {
+        error: String,
+    },
 }
 
 #[derive(Deserialize)]
@@ -36,12 +42,10 @@ impl GetOutputs for Jobset {
         attribute: &str,
         system: System,
     ) -> Result<BTreeMap<String, StorePath>> {
+        let job = format(&self.job, attribute, system)?;
         let url = format!(
-            "{}/job/{}/{}/{}/latest-for/{system}",
-            self.base,
-            self.project,
-            self.jobset,
-            format(&self.job, attribute, system)?,
+            "{}/job/{}/{}/{job}/latest-for/{system}",
+            self.base, self.project, self.jobset,
         );
 
         debug!(url);
@@ -54,12 +58,19 @@ impl GetOutputs for Jobset {
             .into_diagnostic()?
             .json()
             .await
-            .into_diagnostic()?;
+            .into_diagnostic()
+            .wrap_err_with(|| miette!("failed to parse hydra response for {job} on {system}"))?;
 
-        build
-            .buildoutputs
-            .into_iter()
-            .map(|(name, output)| Ok((name, StorePath::new(&output.path)?)))
-            .collect()
+        match build {
+            Build::Ok { buildoutputs } => buildoutputs
+                .into_iter()
+                .map(|(name, output)| Ok((name, StorePath::new(&output.path)?)))
+                .collect(),
+
+            Build::Err { error } => {
+                Err(miette!(error)
+                    .wrap_err(format!("no successful build found for {job} on {system}")))
+            }
+        }
     }
 }
