@@ -58,9 +58,9 @@ impl State {
 
     pub async fn lock(&mut self) -> Result<()> {
         let span = info_span!("lock", indicatif.pb_show = Empty);
-        span.pb_set_length(0);
         span.pb_set_message("generating lockfile");
-        let _guard = span.enter();
+        span.pb_set_length(0);
+        span.pb_start();
 
         let old = Lockfile::from_dir(&self.dir)?;
         let local = LocalSet::new();
@@ -108,7 +108,7 @@ impl State {
         let span = info_span!("pull", indicatif.pb_show = Empty);
         span.pb_set_message("pulling dependencies");
         span.pb_set_length(0);
-        let _guard = span.enter();
+        span.pb_start();
 
         let (tx, mut rx) = mpsc::unbounded_channel();
         tx.send(paths).map_err(|_| miette!("channel closed"))?;
