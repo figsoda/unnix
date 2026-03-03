@@ -16,6 +16,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/main/CHANGELOG.md)"
+          draft: false
 
   release:
     name: release
