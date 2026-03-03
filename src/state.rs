@@ -8,6 +8,8 @@ use std::{
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::{Jitter, RetryTransientMiddleware, policies::ExponentialBackoff};
 use strfmt::strfmt;
 use tokio::{
     select,
@@ -35,11 +37,19 @@ pub struct State {
     pub system: System,
 }
 
-pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
-    Client::builder()
+pub static HTTP_CLIENT: LazyLock<ClientWithMiddleware> = LazyLock::new(|| {
+    let client = Client::builder()
         .user_agent(concat!("unnix/", env!("CARGO_PKG_VERSION")))
         .build()
-        .unwrap()
+        .unwrap();
+
+    let policy = ExponentialBackoff::builder()
+        .jitter(Jitter::Bounded)
+        .build_with_max_retries(4);
+
+    ClientBuilder::new(client)
+        .with(RetryTransientMiddleware::new_with_policy(policy))
+        .build()
 });
 
 impl State {
