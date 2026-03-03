@@ -15,8 +15,8 @@ use tokio::{
     task::{JoinSet, LocalSet},
     try_join,
 };
-use tracing::{debug, info, info_span, warn};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{debug, field::Empty, info, info_span, warn};
+use tracing_indicatif::{span_ext::IndicatifSpanExt, style::ProgressStyle};
 use url::Url;
 
 use crate::{
@@ -57,6 +57,11 @@ impl State {
     }
 
     pub async fn lock(&mut self) -> Result<()> {
+        let span = info_span!("lock", indicatif.pb_show = Empty);
+        span.pb_set_length(0);
+        span.pb_set_message("generating lockfile");
+        let _guard = span.enter();
+
         let old = Lockfile::from_dir(&self.dir)?;
         let local = LocalSet::new();
         let mut tasks = JoinSet::new();
@@ -73,8 +78,14 @@ impl State {
                     let lockfile = lockfile.clone();
                     let name = name.clone();
                     let pkg = pkg.clone();
+                    let span = span.clone();
                     tasks.spawn_local_on(
-                        async move { lockfile.fetch(system, name, &pkg).await },
+                        async move {
+                            span.pb_inc_length(1);
+                            lockfile.fetch(system, name, &pkg).await?;
+                            span.pb_inc(1);
+                            Result::<_>::Ok(())
+                        },
                         &local,
                     );
                 }
@@ -94,7 +105,8 @@ impl State {
     }
 
     pub async fn pull(&self, paths: Vec<StorePath>) -> Result<()> {
-        let span = info_span!("progress");
+        let span = info_span!("pull", indicatif.pb_show = Empty);
+        span.pb_set_message("pulling dependencies");
         span.pb_set_length(0);
         let _guard = span.enter();
 
@@ -103,6 +115,7 @@ impl State {
 
         let mut downloaded = BTreeSet::new();
         let mut tasks = JoinSet::new();
+        let worker_style = Arc::new(ProgressStyle::with_template(" ‣ {msg}").into_diagnostic()?);
 
         loop {
             let join_all = async {
@@ -138,6 +151,7 @@ impl State {
                 let span = span.clone();
                 let store = self.store.clone();
                 let tx = tx.clone();
+                let worker_style = worker_style.clone();
 
                 tasks.spawn(async move {
                     if store.path.join(&path).symlink_metadata().is_ok()
@@ -148,10 +162,12 @@ impl State {
                     }
 
                     span.pb_inc_length(1);
+                    let worker = info_span!("worker", indicatif.pb_show = Empty);
+                    worker.pb_set_style(&worker_style);
+                    worker.pb_set_message(path.as_str());
+                    worker.pb_start();
 
                     let (cache, narinfo) = query(&path, caches).await?;
-
-                    info!("downloading {path} from {cache}");
                     let nar = cache.join(&narinfo.url).into_diagnostic()?;
                     tx.send(narinfo.references.clone())
                         .map_err(|_| miette!("channel closed"))?;
@@ -173,6 +189,7 @@ impl State {
                     };
 
                     try_join!(put_references, unpack_nar)?;
+                    info!("downloaded {path} from {cache}");
                     span.pb_inc(1);
                     Result::<_>::Ok(())
                 });

@@ -15,22 +15,21 @@ use clap::Parser;
 use miette::{IntoDiagnostic, Result};
 use supports_color::Stream;
 use tracing::level_filters::LevelFilter;
-use tracing_indicatif::{IndicatifLayer, style::ProgressStyle};
+use tracing_indicatif::{IndicatifLayer, filter::IndicatifFilter, style::ProgressStyle};
 use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::cli::{Args, Command};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let progress = IndicatifLayer::new()
-        .with_max_progress_bars(1, None)
-        .with_progress_style(
-            ProgressStyle::with_template("{spinner:.blue} {bar:40} [{pos:.green}/{len:.yellow}]")
-                .into_diagnostic()?,
-        );
+    let progress = IndicatifLayer::new().with_progress_style(
+        ProgressStyle::with_template("{spinner:.blue} {msg} {bar:40} [{pos:.green}/{len:.yellow}]")
+            .into_diagnostic()?,
+    );
 
     let layer = tracing_subscriber::fmt::layer()
         .with_ansi(supports_color::on(Stream::Stderr).is_some())
+        .with_target(false)
         .with_writer(progress.get_stderr_writer())
         .without_time()
         .with_filter(
@@ -43,7 +42,7 @@ async fn main() -> Result<()> {
 
     tracing_subscriber::registry()
         .with(layer)
-        .with(progress)
+        .with(progress.with_filter(IndicatifFilter::new(false)))
         .init();
 
     let args = Args::parse();

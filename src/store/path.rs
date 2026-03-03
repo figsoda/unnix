@@ -31,6 +31,10 @@ impl StorePath {
     pub fn hash(&self) -> &str {
         &self.0[.. 32]
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 impl AsRef<Utf8Path> for StorePath {
