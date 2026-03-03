@@ -10,7 +10,7 @@ use std::{
 
 use camino::Utf8Path;
 use kdl::{KdlDocument, KdlNode};
-use miette::{Context, Diagnostic, IntoDiagnostic, Report, Result, SourceSpan, miette};
+use miette::{Diagnostic, IntoDiagnostic, Report, Result, SourceSpan, WrapErr, miette};
 use thiserror::Error;
 use url::Url;
 
