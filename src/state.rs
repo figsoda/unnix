@@ -129,6 +129,8 @@ impl State {
                 let worker_style = worker_style.clone();
 
                 tasks.spawn(async move {
+                    store.lock_path(&path).await?;
+
                     if store.path.join(&path).symlink_metadata().is_ok()
                         && let Some(references) = store.get_references(path.hash()).await?
                     {

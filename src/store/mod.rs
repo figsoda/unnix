@@ -4,7 +4,8 @@ pub mod path;
 use std::{
     collections::BTreeSet,
     env::{VarError, var},
-    fs::{create_dir_all, rename},
+    fmt::Write,
+    fs::create_dir_all,
     io::Cursor,
     num::NonZero,
     time::Duration,
@@ -19,13 +20,14 @@ use fs4::tokio::AsyncFileExt;
 use itertools::Itertools;
 use miette::{IntoDiagnostic, Result, bail, miette};
 use nix_nar::Decoder;
-use tempfile::TempDir;
+use tempfile::{NamedTempFile, TempDir};
 use tokio::{
-    fs::File,
-    io::{AsyncBufRead, AsyncReadExt, AsyncWriteExt},
+    fs::{File, rename},
+    io::{AsyncBufRead, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     task::{JoinSet, LocalSet, spawn_blocking},
     time::sleep,
 };
+use tokio_stream::{StreamExt, wrappers::LinesStream};
 
 use crate::store::{nar::Compression, path::StorePath};
 
@@ -58,6 +60,14 @@ impl Store {
         })
     }
 
+    pub async fn lock_path(&self, path: &StorePath) -> Result<File> {
+        let lock = File::create(self.lock.join(path)).await.into_diagnostic()?;
+        while !lock.try_lock_exclusive().into_diagnostic()? {
+            sleep(Duration::from_millis(250)).await;
+        }
+        Ok(lock)
+    }
+
     pub async fn unpack_nar(
         &self,
         path: &StorePath,
@@ -65,15 +75,6 @@ impl Store {
         compression: Compression,
     ) -> Result<()> {
         let out = self.path.join(path);
-        if out.symlink_metadata().is_ok() {
-            return Ok(());
-        }
-
-        let lock = File::create(self.lock.join(path)).await.into_diagnostic()?;
-        while !lock.try_lock_exclusive().into_diagnostic()? {
-            sleep(Duration::from_millis(250)).await;
-        }
-
         if out.symlink_metadata().is_ok() {
             return Ok(());
         }
@@ -136,37 +137,45 @@ impl Store {
                 .unpack(&tmp)
                 .into_diagnostic()?;
 
-            rename(tmp, out).into_diagnostic()
+            std::fs::rename(tmp, out).into_diagnostic()
         })
         .await
         .into_diagnostic()?
     }
 
     pub async fn get_references(&self, hash: &str) -> Result<Option<Vec<StorePath>>> {
-        let Ok(mut file) = File::open(self.references.join(format!("{hash}.json"))).await else {
+        let Ok(file) = File::open(self.references.join(hash)).await else {
             return Ok(None);
         };
 
-        while !file.try_lock_exclusive().into_diagnostic()? {
-            sleep(Duration::from_millis(250)).await;
-        }
-
-        let mut text = String::new();
-        file.read_to_string(&mut text).await.into_diagnostic()?;
-        serde_json::from_str(&text).into_diagnostic()
+        LinesStream::new(BufReader::new(file).lines())
+            .map(|line| StorePath::from_storeless(line.into_diagnostic()?))
+            .collect::<Result<_>>()
+            .await
+            .map(Some)
     }
 
     pub async fn put_references(&self, hash: &str, references: &[StorePath]) -> Result<()> {
-        let mut file = File::create(self.references.join(format!("{hash}.json")))
+        let tmp = spawn_blocking(NamedTempFile::new)
             .await
+            .into_diagnostic()?
             .into_diagnostic()?;
 
-        if !file.try_lock_exclusive().into_diagnostic()? {
-            return Ok(());
-        }
+        let (file, path) = tmp.into_parts();
+        let mut file = File::from_std(file);
 
-        let buf = serde_json::to_vec(references).into_diagnostic()?;
-        file.write_all(&buf).await.into_diagnostic()
+        let mut text = String::new();
+        for path in references {
+            writeln!(text, "{path}").into_diagnostic()?;
+        }
+        file.write_all(text.as_bytes()).await.into_diagnostic()?;
+
+        rename(&path, self.references.join(hash))
+            .await
+            .into_diagnostic()?;
+        let _ = spawn_blocking(|| path.close()).await;
+
+        Ok(())
     }
 
     pub async fn propagated_build_inputs(
