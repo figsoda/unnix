@@ -64,7 +64,7 @@ default-features = false
 features = ["tokio"]
 
 [dependencies.tokio]
-version = "1.49.0"
+version = "1.50.0"
 features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
