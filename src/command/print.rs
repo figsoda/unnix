@@ -7,8 +7,7 @@ use crate::{
 };
 
 pub async fn print(global: GlobalArgs, args: PrintArgs) -> Result<()> {
-    let mut state = State::new(global)?;
-    state.lock().await?;
+    let state = State::new_locked(global).await?;
     match args.command {
         PrintCommand::Env => env(state).await,
     }

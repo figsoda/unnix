@@ -66,52 +66,17 @@ impl State {
         })
     }
 
-    pub async fn lock(&mut self) -> Result<()> {
-        let span = info_span!("lock", indicatif.pb_show = Empty);
-        span.pb_set_message("generating lockfile");
-        span.pb_set_length(0);
-        span.pb_start();
-
-        let old = Lockfile::from_dir(&self.dir)?;
-        let local = LocalSet::new();
-        let mut tasks = JoinSet::new();
-
-        for (&system, manifest) in &self.manifest.systems {
-            let lockfile = self.lockfile.systems.entry(system).or_default().clone();
-            for (name, pkg) in &manifest.packages {
-                if let Some(old) = old.systems.get(&system)
-                    && let Some(old) = old.inner.get(name)
-                    && old.key == pkg.key()?
-                {
-                    lockfile.inner.insert(name.clone(), old.clone());
-                } else {
-                    let lockfile = lockfile.clone();
-                    let name = name.clone();
-                    let pkg = pkg.clone();
-                    let span = span.clone();
-                    tasks.spawn_local_on(
-                        async move {
-                            span.pb_inc_length(1);
-                            lockfile.fetch(system, name, &pkg).await?;
-                            span.pb_inc(1);
-                            Result::<_>::Ok(())
-                        },
-                        &local,
-                    );
-                }
+    pub async fn new_locked(global: GlobalArgs) -> Result<Self> {
+        let locked = global.locked;
+        let mut state = State::new(global)?;
+        if locked {
+            if !state.locked().await? {
+                bail!("cannot update lockfile with --locked");
             }
+        } else {
+            state.lock().await?;
         }
-
-        local
-            .run_until(async {
-                while let Some(res) = tasks.join_next().await {
-                    res.into_diagnostic()??;
-                }
-                Result::<_>::Ok(())
-            })
-            .await?;
-
-        self.lockfile.write_dir(&self.dir)
+        Ok(state)
     }
 
     pub async fn pull(&self, paths: Vec<StorePath>) -> Result<()> {
@@ -264,6 +229,79 @@ impl State {
 
         cmd.arg("--");
         cmd
+    }
+
+    async fn lock(&mut self) -> Result<()> {
+        let span = info_span!("lock", indicatif.pb_show = Empty);
+        span.pb_set_message("generating lockfile");
+        span.pb_set_length(0);
+        span.pb_start();
+
+        let old = Lockfile::from_dir(&self.dir)?;
+        let local = LocalSet::new();
+        let mut tasks = JoinSet::new();
+
+        for (&system, manifest) in &self.manifest.systems {
+            let lockfile = self.lockfile.systems.entry(system).or_default().clone();
+            for (name, pkg) in &manifest.packages {
+                if let Some(old) = old.systems.get(&system)
+                    && let Some(old) = old.inner.get(name)
+                    && old.key == pkg.key()?
+                {
+                    lockfile.inner.insert(name.clone(), old.clone());
+                } else {
+                    let lockfile = lockfile.clone();
+                    let name = name.clone();
+                    let pkg = pkg.clone();
+                    let span = span.clone();
+                    tasks.spawn_local_on(
+                        async move {
+                            span.pb_inc_length(1);
+                            lockfile.fetch(system, name, &pkg).await?;
+                            span.pb_inc(1);
+                            Result::<_>::Ok(())
+                        },
+                        &local,
+                    );
+                }
+            }
+        }
+
+        local
+            .run_until(async {
+                while let Some(res) = tasks.join_next().await {
+                    res.into_diagnostic()??;
+                }
+                Result::<_>::Ok(())
+            })
+            .await?;
+
+        self.lockfile.write_dir(&self.dir)
+    }
+
+    async fn locked(&mut self) -> Result<bool> {
+        let mut lockfile = Lockfile::from_dir(&self.dir)?;
+
+        for (&system, manifest) in &self.manifest.systems {
+            let Some(lockfile) = lockfile.systems.remove(&system) else {
+                return Ok(false);
+            };
+
+            for (name, pkg) in &manifest.packages {
+                let Some((_, old)) = lockfile.inner.remove(name) else {
+                    return Ok(false);
+                };
+                if old.key != pkg.key()? {
+                    return Ok(false);
+                }
+            }
+
+            if !lockfile.inner.is_empty() {
+                return Ok(false);
+            }
+        }
+
+        Ok(lockfile.systems.is_empty())
     }
 }
 

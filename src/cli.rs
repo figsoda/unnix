@@ -49,4 +49,7 @@ pub enum PrintCommand {
 pub struct GlobalArgs {
     #[arg(short, long, global = true)]
     pub directory: Option<Utf8PathBuf>,
+
+    #[arg(long, global = true)]
+    pub locked: bool,
 }
