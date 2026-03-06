@@ -9,6 +9,7 @@ Manifest {
             kernel: Linux,
         }: SystemManifest {
             packages: {},
+            env: {},
             caches: [
                 Url {
                     scheme: "https",
@@ -26,7 +27,12 @@ Manifest {
                     fragment: None,
                 },
             ],
-            env: {},
+            public_keys: [
+                PublicKey {
+                    name: "nix-community.cachix.org-1",
+                    key: mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=,
+                },
+            ],
         },
     },
 }

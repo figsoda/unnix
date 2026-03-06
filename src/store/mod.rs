@@ -17,6 +17,7 @@ use async_compression::tokio::bufread::{
 use camino::{Utf8Path, Utf8PathBuf};
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
+use harmonia_utils_hash::{Hash, fmt::CommonHash};
 use itertools::Itertools;
 use miette::{IntoDiagnostic, Result, bail, miette};
 use nix_nar::Decoder;
@@ -73,13 +74,15 @@ impl Store {
         path: &StorePath,
         mut reader: impl AsyncBufRead + Unpin,
         compression: Compression,
+        nar_hash: Hash,
+        nar_size: usize,
     ) -> Result<()> {
         let out = self.path.join(path);
         if out.symlink_metadata().is_ok() {
             return Ok(());
         }
 
-        let mut buf = Vec::new();
+        let mut buf = Vec::with_capacity(nar_size);
         match compression {
             Compression::Brotli => {
                 BrotliDecoder::new(reader)
@@ -128,7 +131,18 @@ impl Store {
             }
         }
 
-        spawn_blocking(|| {
+        let path = path.clone();
+        spawn_blocking(move || {
+            let actual_hash = nar_hash.algorithm().digest(&buf);
+            if actual_hash != nar_hash {
+                return Err(miette!(
+                    "expected: {}\n  actual: {}",
+                    nar_hash.sri(),
+                    actual_hash.sri(),
+                )
+                .wrap_err(format!("nar hash mismatch for {path}")));
+            }
+
             let tmp = TempDir::with_prefix("unnix-").into_diagnostic()?;
             let tmp = tmp.path().join("out");
 

@@ -6,6 +6,7 @@ use std::{
 };
 
 use camino::{Utf8Path, Utf8PathBuf};
+use harmonia_store_core::signature::PublicKey;
 use miette::{IntoDiagnostic, Result, bail, miette};
 use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
@@ -116,13 +117,14 @@ impl State {
                 break;
             };
 
-            let caches = &self.manifest.systems[&self.system].caches;
+            let manifest = &self.manifest.systems[&self.system];
             for path in paths {
                 if !downloaded.insert(path.clone()) {
                     continue;
                 }
 
-                let caches = caches.clone();
+                let caches = manifest.caches.clone();
+                let public_keys = manifest.public_keys.clone();
                 let span = span.clone();
                 let store = self.store.clone();
                 let tx = tx.clone();
@@ -144,7 +146,7 @@ impl State {
                     worker.pb_set_message(path.as_str());
                     worker.pb_start();
 
-                    let (cache, narinfo) = query(&path, caches).await?;
+                    let (cache, narinfo) = query(&path, caches, &public_keys).await?;
                     let nar = cache.join(&narinfo.url).into_diagnostic()?;
                     tx.send(narinfo.references.clone())
                         .map_err(|_| miette!("channel closed"))?;
@@ -161,7 +163,13 @@ impl State {
                             .into_diagnostic()?;
 
                         store
-                            .unpack_nar(&path, Cursor::new(nar), narinfo.compression)
+                            .unpack_nar(
+                                &path,
+                                Cursor::new(nar),
+                                narinfo.compression,
+                                narinfo.nar_hash,
+                                narinfo.nar_size,
+                            )
                             .await
                     };
 
@@ -307,12 +315,16 @@ impl State {
     }
 }
 
-async fn query(path: &StorePath, caches: Vec<Arc<Url>>) -> Result<(Arc<Url>, Narinfo)> {
+async fn query(
+    path: &StorePath,
+    caches: Vec<Arc<Url>>,
+    public_keys: &[Arc<PublicKey>],
+) -> Result<(Arc<Url>, Narinfo)> {
     for cache in caches {
         debug!("checking {path} on {cache}");
         match query_one(path.hash(), &cache).await {
             Ok(Some(narinfo)) => {
-                return Ok((cache, Narinfo::parse(&narinfo)?));
+                return Ok((cache, Narinfo::parse(&narinfo, public_keys)?));
             }
             Ok(None) => {}
             Err(e) => {

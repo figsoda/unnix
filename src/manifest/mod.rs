@@ -9,6 +9,7 @@ use std::{
 };
 
 use camino::Utf8Path;
+use harmonia_store_core::signature::PublicKey;
 use kdl::{KdlDocument, KdlNode};
 use miette::{Diagnostic, IntoDiagnostic, Report, Result, SourceSpan, WrapErr, miette};
 use thiserror::Error;
@@ -28,14 +29,16 @@ pub struct Manifest {
 #[derive(Clone, Debug)]
 pub struct SystemManifest {
     pub packages: BTreeMap<Rc<str>, Rc<Package>>,
-    pub caches: Vec<Arc<Url>>,
     pub env: BTreeMap<Rc<str>, Rc<str>>,
+    pub caches: Vec<Arc<Url>>,
+    pub public_keys: Vec<Arc<PublicKey>>,
 }
 
 struct SurfaceSystemManifest<'a> {
     packages: BTreeMap<Rc<str>, SurfacePackage<'a>>,
     env: BTreeMap<Rc<str>, Rc<str>>,
     caches: Vec<Arc<Url>>,
+    public_keys: Vec<Arc<PublicKey>>,
     default_cache: Option<bool>,
     sources: BTreeMap<&'a str, Rc<Source>>,
 }
@@ -61,6 +64,9 @@ struct ManifestError {
     #[label("{message}")]
     span: SourceSpan,
 }
+
+pub const DEFAULT_PUBLIC_KEY: &str =
+    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
 
 macro_rules! kdl_macros {
     // workaround to escape `$`
@@ -246,8 +252,9 @@ impl Manifest {
                 .into_iter()
                 .map(|(name, pkg)| Ok((name, Package::from_surface(pkg, &sources)?)))
                 .collect::<Result<_>>()?,
-            caches: default.caches,
             env: default.env,
+            caches: default.caches,
+            public_keys: default.public_keys,
         };
 
         let mut systems: BTreeMap<_, _> = systems
@@ -292,9 +299,11 @@ impl Manifest {
         }
 
         let cache = Arc::new(Url::parse("https://cache.nixos.org").into_diagnostic()?);
+        let pk = Arc::new(DEFAULT_PUBLIC_KEY.parse::<PublicKey>().into_diagnostic()?);
         for (system, default_cache) in default_cache {
             if default_cache && let Some(manifest) = systems.get_mut(&system) {
                 manifest.caches.insert(0, cache.clone());
+                manifest.public_keys.insert(0, pk.clone());
             }
         }
 
@@ -313,6 +322,7 @@ impl<'a> SurfaceSystemManifest<'a> {
         let mut packages = BTreeMap::new();
         let mut env = BTreeMap::new();
         let mut caches = Vec::new();
+        let mut public_keys = Vec::new();
         let mut default_cache = None;
         let mut sources = BTreeMap::new();
 
@@ -387,10 +397,31 @@ impl<'a> SurfaceSystemManifest<'a> {
                     }
 
                     for child in node.iter_children() {
+                        let name = child.name();
+                        if name.value() == "public-keys" {
+                            assert_no_entries!(child);
+
+                            for child in child.iter_children() {
+                                assert_no_entries!(child);
+                                assert_no_children!(child);
+
+                                let name = child.name();
+                                match name.value().parse() {
+                                    Ok(pk) => {
+                                        public_keys.push(Arc::new(pk));
+                                    }
+                                    Err(e) => {
+                                        bail!(name, "{e}");
+                                    }
+                                }
+                            }
+
+                            continue;
+                        }
+
                         assert_no_entries!(child);
                         assert_no_children!(child);
 
-                        let name = child.name();
                         match name.value().parse() {
                             Ok(cache) => {
                                 caches.push(Arc::new(cache));
@@ -461,6 +492,7 @@ impl<'a> SurfaceSystemManifest<'a> {
             packages,
             env,
             caches,
+            public_keys,
             default_cache,
             sources,
         })
