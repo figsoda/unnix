@@ -24,7 +24,7 @@ pub async fn env(global: GlobalArgs, args: EnvArgs) -> Result<()> {
     } else {
         // TODO: hook into libSystem to redirect paths
         warn!(
-            "`unnix env` is only properly supported on linux, please mount or symlink {} it to /nix/store manually",
+            "`unnix env` is only properly supported on linux, please mount or symlink {} to /nix/store manually",
             state.store.path,
         );
 
