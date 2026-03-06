@@ -1,6 +1,7 @@
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 
+/// Use Nix packages without installing Nix
 #[derive(Parser)]
 pub struct Args {
     #[command(subcommand)]
@@ -12,11 +13,22 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// Cache everything required for `unnix env` on the current system
     Cache,
+
+    /// Enter the development environment
     Env(EnvArgs),
+
+    /// Create a new unnix manifest
     Init(InitArgs),
+
+    /// Generate a new lockfile or keep it up to date with the manifest
     Lock,
+
+    /// Print information about the project
     Print(PrintArgs),
+
+    /// Update the store paths in the lockfile
     Update,
 }
 
@@ -27,9 +39,11 @@ pub struct EnvArgs {
 
 #[derive(Parser)]
 pub struct InitArgs {
+    /// Specify the list of packages
     #[arg(short, long, num_args = 0 ..)]
     pub packages: Vec<String>,
 
+    /// Specify the list of supported systems
     #[arg(short, long, num_args = 1 ..)]
     pub systems: Vec<String>,
 }
@@ -42,14 +56,17 @@ pub struct PrintArgs {
 
 #[derive(Subcommand)]
 pub enum PrintCommand {
+    /// Print shell code for the development environment
     Env,
 }
 
 #[derive(Parser)]
 pub struct GlobalArgs {
+    /// Specify the directory the unnix manifest is in
     #[arg(short, long, global = true)]
     pub directory: Option<Utf8PathBuf>,
 
+    /// Assert the lockfile is up to date
     #[arg(long, global = true)]
     pub locked: bool,
 }
