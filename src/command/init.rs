@@ -19,7 +19,7 @@ pub async fn init(global: GlobalArgs, args: InitArgs) -> Result<()> {
         ".".into()
     };
 
-    let mut file = File::create(dir.join("unnix.kdl")).into_diagnostic()?;
+    let mut file = File::create_new(dir.join("unnix.kdl")).into_diagnostic()?;
     let fmt = FormatConfig::builder().indent("  ").build();
 
     if !args.systems.is_empty() {
