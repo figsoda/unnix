@@ -34,6 +34,7 @@ pub enum Command {
 
 #[derive(Parser)]
 pub struct EnvArgs {
+    /// Specify the command to run instead of $SHELL
     pub command: Option<Vec<String>>,
 }
 
