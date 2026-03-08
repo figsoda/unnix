@@ -1,0 +1,16 @@
+packages {
+  libclang lib
+  nix dev
+  pkg-config-unwrapped
+}
+
+env {
+  LIBCLANG_PATH "{libclang.lib}/lib"
+}
+
+system linux {
+  packages {
+    git
+    mercurial
+  }
+}
