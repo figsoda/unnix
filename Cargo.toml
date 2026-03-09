@@ -1,6 +1,6 @@
 [package]
 name = "unnix"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2024"
 description = "Use Nix packages without installing Nix"
