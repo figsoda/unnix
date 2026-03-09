@@ -3,7 +3,7 @@ name: release
 on:
   push:
     tags:
-      - v[0-9]+.[0-9]+.[0-9]+.*
+      - v[0-9]+.[0-9]+.*
 
 jobs:
   create_release:
@@ -16,7 +16,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/main/CHANGELOG.md)"
-          draft: true
 
   release:
     name: release
