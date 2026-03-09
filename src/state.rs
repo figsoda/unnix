@@ -252,7 +252,7 @@ impl State {
         let mut tasks = JoinSet::new();
 
         for (&system, manifest) in &self.manifest.systems {
-            let lockfile = self.lockfile.systems.entry(system).or_default().clone();
+            let lockfile = self.lockfile.systems.entry(system).or_default();
             for (name, pkg) in &manifest.packages {
                 if let Some(old) = old.systems.get(&system)
                     && let Some(old) = old.inner.get(name)
@@ -290,28 +290,31 @@ impl State {
     }
 
     async fn locked(&mut self) -> Result<bool> {
-        let mut lockfile = Lockfile::from_dir(&self.dir)?;
+        let mut old = Lockfile::from_dir(&self.dir)?;
 
         for (&system, manifest) in &self.manifest.systems {
-            let Some(lockfile) = lockfile.systems.remove(&system) else {
+            let lockfile = self.lockfile.systems.entry(system).or_default();
+
+            let Some(old) = old.systems.remove(&system) else {
                 return Ok(false);
             };
 
             for (name, pkg) in &manifest.packages {
-                let Some((_, old)) = lockfile.inner.remove(name) else {
+                let Some((_, old)) = old.inner.remove(name) else {
                     return Ok(false);
                 };
                 if old.key != pkg.key()? {
                     return Ok(false);
                 }
+                lockfile.inner.insert(name.clone(), old.clone());
             }
 
-            if !lockfile.inner.is_empty() {
+            if !old.inner.is_empty() {
                 return Ok(false);
             }
         }
 
-        Ok(lockfile.systems.is_empty())
+        Ok(old.systems.is_empty())
     }
 }
 
