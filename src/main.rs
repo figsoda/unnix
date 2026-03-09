@@ -50,6 +50,9 @@ async fn main() -> Result<()> {
         Command::Cache => {
             command::cache(args.global).await?;
         }
+        Command::Ci(ci_args) => {
+            command::ci(args.global, ci_args).await?;
+        }
         Command::Env(env_args) => {
             command::env(args.global, env_args).await?;
         }

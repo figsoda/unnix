@@ -1,0 +1,67 @@
+use std::env::var_os;
+
+use miette::{IntoDiagnostic, Result, WrapErr, bail};
+use shell_escape::escape;
+use tokio::{fs::File, io::AsyncWriteExt, try_join};
+
+use crate::{
+    cli::{CiArgs, CiCommand, GlobalArgs},
+    state::State,
+};
+
+pub async fn ci(global: GlobalArgs, args: CiArgs) -> Result<()> {
+    let state = State::new_locked(global).await?;
+    match args.command {
+        CiCommand::Github => github(state).await,
+    }
+}
+
+async fn github(state: State) -> Result<()> {
+    let Some(manifest) = state.manifest.systems.get(&state.system) else {
+        bail!("system {} not supported by the manifest", state.system);
+    };
+
+    let mut paths = state.lockfile.collect_outputs(&state.system);
+    state.pull(paths.clone()).await?;
+    paths.extend(state.store.propagated_build_inputs(paths.clone()).await?);
+
+    let write_env = async {
+        let mut github_env = File::options()
+            .append(true)
+            .create(true)
+            .open(var_os("GITHUB_ENV").wrap_err("$GITHUB_ENV is unset")?)
+            .await
+            .into_diagnostic()?;
+
+        for (name, value) in state.extra_env(&paths, manifest)? {
+            let env = format!("{name}={}\n", escape(value.into()));
+            github_env
+                .write_all(env.as_bytes())
+                .await
+                .into_diagnostic()?;
+        }
+
+        Result::<_>::Ok(())
+    };
+
+    let write_path = async {
+        let mut github_path = File::options()
+            .append(true)
+            .create(true)
+            .open(var_os("GITHUB_PATH").wrap_err("$GITHUB_PATH is unset")?)
+            .await
+            .into_diagnostic()?;
+
+        for path in state.store.subpaths(&paths, "bin") {
+            github_path
+                .write_all(format!("{path}\n").as_bytes())
+                .await
+                .into_diagnostic()?;
+        }
+
+        Ok(())
+    };
+
+    try_join!(write_env, write_path)?;
+    Ok(())
+}

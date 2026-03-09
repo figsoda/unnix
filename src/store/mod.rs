@@ -250,16 +250,7 @@ impl Store {
         paths: &[StorePath],
         subpath: &str,
     ) -> Result<String> {
-        let mut paths = paths
-            .iter()
-            .flat_map(|path| {
-                let path = path.as_ref().join(subpath);
-                self.path
-                    .join(&path)
-                    .exists()
-                    .then(|| Utf8Path::new("/nix/store").join(path))
-            })
-            .join(sep);
+        let mut paths = self.subpaths(paths, subpath).join(sep);
 
         match var(name) {
             Ok(old) => {
@@ -273,5 +264,19 @@ impl Store {
         }
 
         Ok(paths)
+    }
+
+    pub fn subpaths<'a>(
+        &'a self,
+        paths: &'a [StorePath],
+        subpath: &'a str,
+    ) -> impl Iterator<Item = Utf8PathBuf> + 'a {
+        paths.iter().flat_map(move |path| {
+            let path = path.as_ref().join(subpath);
+            self.path
+                .join(&path)
+                .exists()
+                .then(|| Utf8Path::new("/nix/store").join(path))
+        })
     }
 }

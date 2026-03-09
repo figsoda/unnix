@@ -16,6 +16,9 @@ pub enum Command {
     /// Cache everything required for `unnix env` on the current system
     Cache,
 
+    /// Set up environment variables for CI
+    Ci(CiArgs),
+
     /// Enter the development environment
     Env(EnvArgs),
 
@@ -30,6 +33,18 @@ pub enum Command {
 
     /// Update the store paths in the lockfile
     Update,
+}
+
+#[derive(Parser)]
+pub struct CiArgs {
+    #[command(subcommand)]
+    pub command: CiCommand,
+}
+
+#[derive(Subcommand)]
+pub enum CiCommand {
+    /// Set up environment variables for GitHub Actions
+    Github,
 }
 
 #[derive(Parser)]

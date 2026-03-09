@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     io::Cursor,
     process::Command,
     sync::{Arc, LazyLock},
@@ -25,7 +25,7 @@ use url::Url;
 use crate::{
     cli::GlobalArgs,
     lockfile::Lockfile,
-    manifest::Manifest,
+    manifest::{Manifest, SystemManifest},
     store::{Store, nar::Narinfo, path::StorePath},
     system::System,
 };
@@ -184,7 +184,7 @@ impl State {
         Ok(())
     }
 
-    pub async fn env(&self) -> Result<Vec<(&str, String)>> {
+    pub async fn env(&self) -> Result<BTreeMap<&str, String>> {
         let Some(manifest) = self.manifest.systems.get(&self.system) else {
             bail!("system {} not supported by the manifest", self.system);
         };
@@ -194,20 +194,30 @@ impl State {
         paths.extend(self.store.propagated_build_inputs(paths.clone()).await?);
 
         let path = self.store.prefix_env_subpaths("PATH", ":", &paths, "bin")?;
+        let mut env = self.extra_env(&paths, manifest)?;
+        env.entry("PATH").or_insert(path);
 
+        Ok(env)
+    }
+
+    // environment variables other than $PATH
+    pub fn extra_env<'a>(
+        &self,
+        paths: &[StorePath],
+        manifest: &'a SystemManifest,
+    ) -> Result<BTreeMap<&'a str, String>> {
         let library_path = self
             .store
-            .prefix_env_subpaths("LIBRARY_PATH", ":", &paths, "lib")?;
+            .prefix_env_subpaths("LIBRARY_PATH", ":", paths, "lib")?;
 
         let pkg_config_path =
             self.store
-                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", &paths, "lib/pkgconfig")?;
+                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", paths, "lib/pkgconfig")?;
 
-        let mut env = vec![
-            ("PATH", path),
+        let mut env = BTreeMap::from([
             ("LIBRARY_PATH", library_path),
             ("PKG_CONFIG_PATH", pkg_config_path),
-        ];
+        ]);
 
         let mut pkgs = HashMap::new();
         for entry in &self.lockfile.systems[&self.system].inner {
@@ -217,7 +227,7 @@ impl State {
             }));
         }
         for (name, value) in &manifest.env {
-            env.push((name.as_ref(), strfmt(value, &pkgs).into_diagnostic()?));
+            env.insert(name.as_ref(), strfmt(value, &pkgs).into_diagnostic()?);
         }
 
         Ok(env)
