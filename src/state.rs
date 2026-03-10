@@ -193,26 +193,27 @@ impl State {
         self.pull(paths.clone()).await?;
         paths.extend(self.store.propagated_build_inputs(paths.clone()).await?);
 
-        let path = self.store.prefix_env_subpaths("PATH", ":", &paths, "bin")?;
-        let mut env = self.extra_env(&paths, manifest)?;
+        let (mut env, path) = try_join!(
+            self.extra_env(&paths, manifest),
+            self.store.prefix_env_subpaths("PATH", ":", &paths, "bin"),
+        )?;
         env.entry("PATH").or_insert(path);
 
         Ok(env)
     }
 
     // environment variables other than $PATH
-    pub fn extra_env<'a>(
+    pub async fn extra_env<'a>(
         &self,
         paths: &[StorePath],
         manifest: &'a SystemManifest,
     ) -> Result<BTreeMap<&'a str, String>> {
-        let library_path = self
-            .store
-            .prefix_env_subpaths("LIBRARY_PATH", ":", paths, "lib")?;
-
-        let pkg_config_path =
+        let (library_path, pkg_config_path) = try_join!(
             self.store
-                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", paths, "lib/pkgconfig")?;
+                .prefix_env_subpaths("LIBRARY_PATH", ":", paths, "lib"),
+            self.store
+                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", paths, "lib/pkgconfig")
+        )?;
 
         let mut env = BTreeMap::from([
             ("LIBRARY_PATH", library_path),

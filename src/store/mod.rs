@@ -8,27 +8,28 @@ use std::{
     fs::create_dir_all,
     io::Cursor,
     num::NonZero,
+    pin::pin,
     time::Duration,
 };
 
 use async_compression::tokio::bufread::{
     BrotliDecoder, BzDecoder, GzipDecoder, Lz4Decoder, LzmaDecoder, XzDecoder, ZstdDecoder,
 };
+use async_stream::stream;
 use camino::{Utf8Path, Utf8PathBuf};
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
 use harmonia_utils_hash::{Hash, fmt::CommonHash};
-use itertools::Itertools;
 use miette::{IntoDiagnostic, Result, bail, miette};
 use nix_nar::Decoder;
 use tempfile::{NamedTempFile, TempDir};
 use tokio::{
-    fs::{File, rename},
+    fs::{File, rename, symlink_metadata},
     io::{AsyncBufRead, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     task::{JoinSet, LocalSet, spawn_blocking},
     time::sleep,
 };
-use tokio_stream::{StreamExt, wrappers::LinesStream};
+use tokio_stream::{Stream, StreamExt, wrappers::LinesStream};
 
 use crate::store::{nar::Compression, path::StorePath};
 
@@ -243,40 +244,49 @@ impl Store {
         Ok(propagated)
     }
 
-    pub fn prefix_env_subpaths(
+    pub async fn prefix_env_subpaths(
         &self,
         name: &str,
         sep: &str,
         paths: &[StorePath],
         subpath: &str,
     ) -> Result<String> {
-        let mut paths = self.subpaths(paths, subpath).join(sep);
+        let mut val = String::new();
+        let mut paths = pin!(self.subpaths(paths, subpath).await);
+        if let Some(path) = paths.next().await {
+            val.push_str(path.as_str());
+            while let Some(path) = paths.next().await {
+                val.push_str(sep);
+                val.push_str(path.as_str());
+            }
+        }
 
         match var(name) {
+            Ok(old) if val.is_empty() => Ok(old),
             Ok(old) => {
-                paths.push_str(sep);
-                paths.push_str(&old);
+                val.push_str(sep);
+                val.push_str(&old);
+                Ok(val)
             }
-            Err(VarError::NotPresent) => {}
+            Err(VarError::NotPresent) => Ok(val),
             Err(e) => {
                 bail!(e);
             }
         }
-
-        Ok(paths)
     }
 
-    pub fn subpaths<'a>(
+    pub async fn subpaths<'a>(
         &'a self,
         paths: &'a [StorePath],
         subpath: &'a str,
-    ) -> impl Iterator<Item = Utf8PathBuf> + 'a {
-        paths.iter().flat_map(move |path| {
-            let path = path.as_ref().join(subpath);
-            self.path
-                .join(&path)
-                .exists()
-                .then(|| Utf8Path::new("/nix/store").join(path))
+    ) -> impl Stream<Item = Utf8PathBuf> + 'a {
+        stream!({
+            for path in paths {
+                let path = path.as_ref().join(subpath);
+                if symlink_metadata(self.path.join(&path)).await.is_ok() {
+                    yield Utf8Path::new("/nix/store").join(path);
+                }
+            }
         })
     }
 }

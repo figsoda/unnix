@@ -1,8 +1,9 @@
-use std::env::var_os;
+use std::{env::var_os, pin::pin};
 
 use miette::{IntoDiagnostic, Result, WrapErr, bail};
 use shell_escape::escape;
-use tokio::{fs::File, io::AsyncWriteExt, try_join};
+use tokio::{fs::File, io::AsyncWriteExt, join, try_join};
+use tokio_stream::StreamExt;
 
 use crate::{
     cli::{CiArgs, CiCommand, GlobalArgs},
@@ -26,14 +27,19 @@ async fn github(state: State) -> Result<()> {
     paths.extend(state.store.propagated_build_inputs(paths.clone()).await?);
 
     let write_env = async {
-        let mut github_env = File::options()
-            .append(true)
-            .create(true)
-            .open(var_os("GITHUB_ENV").wrap_err("$GITHUB_ENV is unset")?)
-            .await
-            .into_diagnostic()?;
+        let (mut github_env, env) = try_join!(
+            async {
+                File::options()
+                    .append(true)
+                    .create(true)
+                    .open(var_os("GITHUB_ENV").wrap_err("$GITHUB_ENV is unset")?)
+                    .await
+                    .into_diagnostic()
+            },
+            state.extra_env(&paths, manifest),
+        )?;
 
-        for (name, value) in state.extra_env(&paths, manifest)? {
+        for (name, value) in env {
             let env = format!("{name}={}\n", escape(value.into()));
             github_env
                 .write_all(env.as_bytes())
@@ -45,14 +51,21 @@ async fn github(state: State) -> Result<()> {
     };
 
     let write_path = async {
-        let mut github_path = File::options()
-            .append(true)
-            .create(true)
-            .open(var_os("GITHUB_PATH").wrap_err("$GITHUB_PATH is unset")?)
-            .await
-            .into_diagnostic()?;
+        let (github_path, paths) = join!(
+            async {
+                File::options()
+                    .append(true)
+                    .create(true)
+                    .open(var_os("GITHUB_PATH").wrap_err("$GITHUB_PATH is unset")?)
+                    .await
+                    .into_diagnostic()
+            },
+            state.store.subpaths(&paths, "bin"),
+        );
 
-        for path in state.store.subpaths(&paths, "bin") {
+        let mut github_path = github_path?;
+        let mut paths = pin!(paths);
+        while let Some(path) = paths.next().await {
             github_path
                 .write_all(format!("{path}\n").as_bytes())
                 .await
