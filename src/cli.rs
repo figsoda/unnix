@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 
 /// Use Nix packages without installing Nix
 #[derive(Parser)]
+#[command(version)]
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
