@@ -1,7 +1,9 @@
+use std::rc::Rc;
+
 use miette::{IntoDiagnostic, Result};
 use tokio::task::{JoinSet, LocalSet};
 
-use crate::{cli::GlobalArgs, state::State};
+use crate::{cli::GlobalArgs, lockfile::SystemLockfile, state::State};
 
 pub async fn update(global: GlobalArgs) -> Result<()> {
     let mut state = State::new(global)?;
@@ -9,7 +11,7 @@ pub async fn update(global: GlobalArgs) -> Result<()> {
     let mut tasks = JoinSet::new();
 
     for (system, manifest) in state.manifest.systems {
-        let lockfile = state.lockfile.systems.entry(system).or_default();
+        let lockfile = Rc::new(SystemLockfile::default());
         for (name, pkg) in manifest.packages {
             let lockfile = lockfile.clone();
             tasks.spawn_local_on(
@@ -17,6 +19,7 @@ pub async fn update(global: GlobalArgs) -> Result<()> {
                 &local,
             );
         }
+        state.lockfile.systems.insert(system, lockfile);
     }
 
     local

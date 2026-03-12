@@ -2,6 +2,7 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     io::Cursor,
     process::Command,
+    rc::Rc,
     sync::{Arc, LazyLock},
 };
 
@@ -24,7 +25,7 @@ use url::Url;
 
 use crate::{
     cli::GlobalArgs,
-    lockfile::Lockfile,
+    lockfile::{Lockfile, SystemLockfile},
     manifest::{Manifest, SystemManifest},
     store::{Store, nar::Narinfo, path::StorePath},
     system::System,
@@ -263,7 +264,7 @@ impl State {
         let mut tasks = JoinSet::new();
 
         for (&system, manifest) in &self.manifest.systems {
-            let lockfile = self.lockfile.systems.entry(system).or_default();
+            let lockfile = Rc::new(SystemLockfile::default());
             for (name, pkg) in &manifest.packages {
                 if let Some(old) = old.systems.get(&system)
                     && let Some(old) = old.inner.get(name)
@@ -286,6 +287,7 @@ impl State {
                     );
                 }
             }
+            self.lockfile.systems.insert(system, lockfile);
         }
 
         local
@@ -304,12 +306,11 @@ impl State {
         let mut old = Lockfile::from_dir(&self.dir)?;
 
         for (&system, manifest) in &self.manifest.systems {
-            let lockfile = self.lockfile.systems.entry(system).or_default();
-
             let Some(old) = old.systems.remove(&system) else {
                 return Ok(false);
             };
 
+            let lockfile = SystemLockfile::default();
             for (name, pkg) in &manifest.packages {
                 let Some((_, old)) = old.inner.remove(name) else {
                     return Ok(false);
@@ -323,6 +324,8 @@ impl State {
             if !old.inner.is_empty() {
                 return Ok(false);
             }
+
+            self.lockfile.systems.insert(system, Rc::new(lockfile));
         }
 
         Ok(old.systems.is_empty())
