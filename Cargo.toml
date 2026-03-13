@@ -59,7 +59,7 @@ features = [
 ]
 
 [dependencies.clap]
-version = "4.5.60"
+version = "4.6.0"
 features = ["cargo", "derive", "unicode", "wrap_help"]
 
 [dependencies.fs4]
@@ -73,9 +73,9 @@ features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
 camino = "1.2.2"
-clap = { version = "4.5.60", features = ["derive"] }
-clap_complete = "4.5.66"
-clap_mangen = "0.2.31"
+clap = { version = "4.6.0", features = ["derive"] }
+clap_complete = "4.6.0"
+clap_mangen = "0.2.33"
 
 [dev-dependencies]
 assert_cmd = "2.2.0"
