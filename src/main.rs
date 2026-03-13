@@ -23,8 +23,12 @@ use crate::cli::{Args, Command};
 #[tokio::main]
 async fn main() -> Result<()> {
     let progress = IndicatifLayer::new().with_progress_style(
-        ProgressStyle::with_template("{spinner:.blue} {msg} {bar:40} [{pos:.green}/{len:.yellow}]")
-            .into_diagnostic()?,
+        ProgressStyle::with_template(
+            " {spinner:.blue} {msg:.bold} [{bar:30}] {pos:.green}/{len:.yellow}",
+        )
+        .into_diagnostic()?
+        .progress_chars("🬋•·")
+        .tick_chars("⠁⠂⠄⡀⡈⡐⡠⣀⣁⣂⣄⣌⣔⣤⣥⣦⣮⣶⣷⣿⢿⠿⡻⠻⢛⠛⠝⡙⠙⠩⢉⠉⠊⠌⡈⠈⠐⠠⢀⠀"),
     );
 
     let layer = tracing_subscriber::fmt::layer()

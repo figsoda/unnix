@@ -92,7 +92,7 @@ impl State {
 
         let mut downloaded = BTreeSet::new();
         let mut tasks = JoinSet::new();
-        let worker_style = Arc::new(ProgressStyle::with_template(" ‣ {msg}").into_diagnostic()?);
+        let worker_style = Arc::new(ProgressStyle::with_template("  ‣ {msg}").into_diagnostic()?);
 
         loop {
             let join_all = async {
