@@ -15,12 +15,7 @@ use serde_json::ser::PrettyFormatter;
 use serde_with::{DisplayFromStr, serde_as};
 use thiserror::Error;
 
-use crate::{
-    package::{Base64Hash, Package},
-    source::GetOutputs,
-    store::path::StorePath,
-    system::System,
-};
+use crate::{package::Base64Hash, store::path::StorePath, system::System};
 
 type Version = MustBe!(0u64);
 
@@ -99,25 +94,6 @@ impl Lockfile {
             }
         }
         outputs
-    }
-}
-
-impl SystemLockfile {
-    pub async fn fetch(&self, system: System, name: Rc<str>, pkg: &Package) -> Result<()> {
-        let mut outputs = pkg.source.get_outputs(&pkg.attribute, system).await?;
-        if !pkg.outputs.is_empty() {
-            outputs.retain(|name, _| pkg.outputs.contains(name.as_str()));
-        }
-
-        self.inner.insert(
-            name,
-            PackageLock {
-                key: pkg.key()?,
-                outputs,
-            },
-        );
-
-        Ok(())
     }
 }
 

@@ -1,0 +1,86 @@
+pub mod hydra;
+
+use std::{collections::HashMap, rc::Rc};
+
+use miette::{IntoDiagnostic, Result};
+use serde::Serialize;
+use strfmt::strfmt;
+use tracing::Span;
+use tracing_indicatif::span_ext::IndicatifSpanExt;
+
+use crate::{
+    lockfile::Lockfile,
+    package::{Base64Hash, Package},
+    resolver::hydra::{HydraJobs, HydraResolver},
+    system::System,
+};
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "type")]
+pub enum Resolver {
+    Hydra(HydraResolver),
+}
+
+pub struct ResolverJobs {
+    span: Span,
+    hydra: HydraJobs,
+}
+
+impl ResolverJobs {
+    pub fn new(span: Span) -> Self {
+        Self {
+            span,
+            hydra: HydraJobs::default(),
+        }
+    }
+
+    pub async fn resolve(self, lockfile: &Lockfile) -> Result<()> {
+        self.hydra.resolve(&self.span, lockfile).await?;
+
+        Ok(())
+    }
+
+    pub fn add(
+        &mut self,
+        name: Rc<str>,
+        key: Base64Hash,
+        pkg: &Package,
+        system: System,
+    ) -> Result<()> {
+        self.span.pb_inc_length(1);
+
+        match pkg.resolver.as_ref() {
+            Resolver::Hydra(hydra) => {
+                self.hydra.add(
+                    hydra,
+                    name.clone(),
+                    key,
+                    &pkg.attribute,
+                    system,
+                    pkg.outputs.clone(),
+                )?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Default for Resolver {
+    fn default() -> Self {
+        Self::Hydra(HydraResolver {
+            base: "https://hydra.nixos.org".into(),
+            project: "nixpkgs".into(),
+            jobset: "unstable".into(),
+            job: "{attribute}.{system}".into(),
+        })
+    }
+}
+
+fn format(template: &str, attribute: &str, system: System) -> Result<String> {
+    let system = system.to_string();
+    let mut params = HashMap::<String, _>::new();
+    params.insert("attribute".into(), attribute);
+    params.insert("system".into(), &system);
+    strfmt(template, &params).into_diagnostic()
+}

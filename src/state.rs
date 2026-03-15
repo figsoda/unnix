@@ -13,12 +13,7 @@ use reqwest::{Client, StatusCode};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{Jitter, RetryTransientMiddleware, policies::ExponentialBackoff};
 use strfmt::strfmt;
-use tokio::{
-    select,
-    sync::mpsc,
-    task::{JoinSet, LocalSet},
-    try_join,
-};
+use tokio::{select, sync::mpsc, task::JoinSet, try_join};
 use tracing::{debug, field::Empty, info, info_span, warn};
 use tracing_indicatif::{span_ext::IndicatifSpanExt, style::ProgressStyle};
 use url::Url;
@@ -27,6 +22,7 @@ use crate::{
     cli::GlobalArgs,
     lockfile::{Lockfile, SystemLockfile},
     manifest::{Manifest, SystemManifest},
+    resolver::ResolverJobs,
     store::{Store, nar::Narinfo, path::StorePath},
     system::System,
 };
@@ -258,47 +254,26 @@ impl State {
         span.pb_set_message("generating lockfile");
         span.pb_set_length(0);
         span.pb_start();
+        let mut jobs = ResolverJobs::new(span);
 
         let old = Lockfile::from_dir(&self.dir)?;
-        let local = LocalSet::new();
-        let mut tasks = JoinSet::new();
-
         for (&system, manifest) in &self.manifest.systems {
             let lockfile = Rc::new(SystemLockfile::default());
             for (name, pkg) in &manifest.packages {
+                let key = pkg.key()?;
                 if let Some(old) = old.systems.get(&system)
                     && let Some(old) = old.inner.get(name)
-                    && old.key == pkg.key()?
+                    && old.key == key
                 {
                     lockfile.inner.insert(name.clone(), old.clone());
                 } else {
-                    let lockfile = lockfile.clone();
-                    let name = name.clone();
-                    let pkg = pkg.clone();
-                    let span = span.clone();
-                    tasks.spawn_local_on(
-                        async move {
-                            span.pb_inc_length(1);
-                            lockfile.fetch(system, name, &pkg).await?;
-                            span.pb_inc(1);
-                            Result::<_>::Ok(())
-                        },
-                        &local,
-                    );
+                    jobs.add(name.clone(), key, pkg, system)?;
                 }
             }
             self.lockfile.systems.insert(system, lockfile);
         }
 
-        local
-            .run_until(async {
-                while let Some(res) = tasks.join_next().await {
-                    res.into_diagnostic()??;
-                }
-                Result::<_>::Ok(())
-            })
-            .await?;
-
+        jobs.resolve(&self.lockfile).await?;
         self.lockfile.write_dir(&self.dir)
     }
 

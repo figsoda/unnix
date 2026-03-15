@@ -17,7 +17,7 @@ use url::Url;
 
 use crate::{
     package::Package,
-    source::{Source, hydra::Jobset},
+    resolver::{Resolver, hydra::HydraResolver},
     system::{Arch, Kernel, System},
 };
 
@@ -40,14 +40,14 @@ struct SurfaceSystemManifest<'a> {
     caches: Vec<Arc<Url>>,
     public_keys: Vec<Arc<PublicKey>>,
     default_cache: Option<bool>,
-    sources: BTreeMap<&'a str, Rc<Source>>,
+    resolvers: BTreeMap<&'a str, Rc<Resolver>>,
 }
 
 #[derive(Clone)]
 struct SurfacePackage<'a> {
-    source: &'a str,
+    resolver: &'a str,
     attribute: Rc<str>,
-    outputs: BTreeSet<Rc<str>>,
+    outputs: Rc<BTreeSet<String>>,
 }
 
 struct SystemPredicate {
@@ -243,14 +243,14 @@ impl Manifest {
             .map(|system| (*system, default_cache))
             .collect();
 
-        let mut sources = default.sources;
-        sources.entry("default").or_default();
+        let mut resolvers = default.resolvers;
+        resolvers.entry("default").or_default();
 
         let default = SystemManifest {
             packages: default
                 .packages
                 .into_iter()
-                .map(|(name, pkg)| Ok((name, Package::from_surface(pkg, &sources)?)))
+                .map(|(name, pkg)| Ok((name, Package::from_surface(pkg, &resolvers)?)))
                 .collect::<Result<_>>()?,
             env: default.env,
             caches: default.caches,
@@ -276,11 +276,11 @@ impl Manifest {
                     continue;
                 }
 
-                let mut sources = sources.clone();
-                sources.extend(surface.sources.clone());
+                let mut resolvers = resolvers.clone();
+                resolvers.extend(surface.resolvers.clone());
 
                 for (name, pkg) in &surface.packages {
-                    let pkg = Package::from_surface(pkg.clone(), &sources)?;
+                    let pkg = Package::from_surface(pkg.clone(), &resolvers)?;
                     manifest.packages.insert(name.clone(), pkg);
                 }
 
@@ -324,7 +324,7 @@ impl<'a> SurfaceSystemManifest<'a> {
         let mut caches = Vec::new();
         let mut public_keys = Vec::new();
         let mut default_cache = None;
-        let mut sources = BTreeMap::new();
+        let mut resolvers = BTreeMap::new();
 
         for node in doc.nodes() {
             let name = node.name();
@@ -335,15 +335,15 @@ impl<'a> SurfaceSystemManifest<'a> {
                     for child in node.iter_children() {
                         assert_no_children!(child);
 
-                        let mut source = None;
+                        let mut resolver = None;
                         let mut attribute = None;
                         let mut outputs = BTreeSet::new();
 
                         for entry in child.entries() {
                             if let Some(name) = entry.name() {
                                 match name.value() {
-                                    "source" => {
-                                        source = Some(str!(entry));
+                                    "resolver" => {
+                                        resolver = Some(str!(entry));
                                     }
                                     "attribute" => {
                                         attribute = Some(str!(entry));
@@ -358,9 +358,9 @@ impl<'a> SurfaceSystemManifest<'a> {
                         }
 
                         let pkg = SurfacePackage {
-                            source: source.unwrap_or("default"),
+                            resolver: resolver.unwrap_or("default"),
                             attribute: attribute.unwrap_or(child.name().value()).into(),
-                            outputs,
+                            outputs: Rc::new(outputs),
                         };
                         if packages.insert(child.name().value().into(), pkg).is_some() {
                             bail!(child, "duplicate package");
@@ -465,7 +465,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                         }
                     }
 
-                    let source = Source::Hydra(Jobset {
+                    let resolver = Resolver::Hydra(HydraResolver {
                         base: base.wrap_err_with(|| err!(node, "missing base"))?.into(),
                         project: project
                             .wrap_err_with(|| err!(node, "missing project"))?
@@ -475,8 +475,8 @@ impl<'a> SurfaceSystemManifest<'a> {
                             .into(),
                         job: job.into(),
                     });
-                    if sources.insert(name, source.into()).is_some() {
-                        bail!(node, "duplicate source");
+                    if resolvers.insert(name, resolver.into()).is_some() {
+                        bail!(node, "duplicate resolver");
                     }
                 }
 
@@ -494,7 +494,7 @@ impl<'a> SurfaceSystemManifest<'a> {
             caches,
             public_keys,
             default_cache,
-            sources,
+            resolvers,
         })
     }
 }
@@ -502,14 +502,14 @@ impl<'a> SurfaceSystemManifest<'a> {
 impl Package {
     fn from_surface(
         pkg: SurfacePackage,
-        sources: &BTreeMap<&str, Rc<Source>>,
+        resolvers: &BTreeMap<&str, Rc<Resolver>>,
     ) -> Result<Rc<Package>> {
         Ok(Rc::new(Package {
             attribute: pkg.attribute,
             outputs: pkg.outputs,
-            source: sources
-                .get(pkg.source)
-                .ok_or_else(|| miette!("source {:?} not found", pkg.source))?
+            resolver: resolvers
+                .get(pkg.resolver)
+                .ok_or_else(|| miette!("resolver {:?} not found", pkg.resolver))?
                 .clone(),
         }))
     }

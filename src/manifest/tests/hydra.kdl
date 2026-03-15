@@ -1,6 +1,6 @@
 packages {
   a
-  b source=c
+  b resolver=c
 }
 
 hydra default {

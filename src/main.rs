@@ -6,7 +6,7 @@ mod command;
 mod lockfile;
 mod manifest;
 mod package;
-mod source;
+mod resolver;
 mod state;
 mod store;
 mod system;

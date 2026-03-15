@@ -14,8 +14,8 @@ Manifest {
                     outputs: {
                         "lib",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -28,8 +28,8 @@ Manifest {
                     outputs: {
                         "dev",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -42,8 +42,8 @@ Manifest {
                     outputs: {
                         "out",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -108,8 +108,8 @@ Manifest {
                     outputs: {
                         "out",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -122,8 +122,8 @@ Manifest {
                     outputs: {
                         "lib",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -134,8 +134,8 @@ Manifest {
                 "mercurial": Package {
                     attribute: "mercurial",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -148,8 +148,8 @@ Manifest {
                     outputs: {
                         "dev",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
@@ -162,8 +162,8 @@ Manifest {
                     outputs: {
                         "out",
                     },
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",

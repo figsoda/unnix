@@ -12,8 +12,8 @@ Manifest {
                 "a": Package {
                     attribute: "a",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
@@ -24,8 +24,8 @@ Manifest {
                 "b": Package {
                     attribute: "b",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "g",
                             project: "h",
                             jobset: "i",
@@ -67,8 +67,8 @@ Manifest {
                 "a": Package {
                     attribute: "a",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
@@ -79,8 +79,8 @@ Manifest {
                 "b": Package {
                     attribute: "b",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "g",
                             project: "h",
                             jobset: "i",
@@ -122,8 +122,8 @@ Manifest {
                 "a": Package {
                     attribute: "a",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
@@ -134,8 +134,8 @@ Manifest {
                 "b": Package {
                     attribute: "b",
                     outputs: {},
-                    source: Hydra(
-                        Jobset {
+                    resolver: Hydra(
+                        HydraResolver {
                             base: "g",
                             project: "h",
                             jobset: "i",

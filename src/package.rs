@@ -10,13 +10,13 @@ use data_encoding::BASE64;
 use miette::{IntoDiagnostic, Report, Result, miette};
 use serde::Serialize;
 
-use crate::source::Source;
+use crate::resolver::Resolver;
 
 #[derive(Debug, Serialize)]
 pub struct Package {
     pub attribute: Rc<str>,
-    pub outputs: BTreeSet<Rc<str>>,
-    pub source: Rc<Source>,
+    pub outputs: Rc<BTreeSet<String>>,
+    pub resolver: Rc<Resolver>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
