@@ -7,7 +7,6 @@ use dashmap::DashMap;
 use miette::{IntoDiagnostic, Result, WrapErr, miette};
 use reqwest::{Method, header::ACCEPT};
 use serde::{Deserialize, Serialize};
-use serde_with::{DisplayFromStr, serde_as};
 use tokio::{
     sync::Semaphore,
     task::{JoinSet, LocalSet},
@@ -37,8 +36,6 @@ pub struct HydraResolver {
     pub job: String,
 }
 
-#[serde_as]
-#[derive(Debug, Serialize)]
 struct HydraPackage {
     base: Rc<str>,
 
@@ -48,7 +45,6 @@ struct HydraPackage {
 
     job: String,
 
-    #[serde_as(as = "DisplayFromStr")]
     system: System,
 
     outputs: Rc<BTreeSet<String>>,
