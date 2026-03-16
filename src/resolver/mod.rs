@@ -61,25 +61,13 @@ impl ResolverJobs {
 
         match pkg.resolver.as_ref() {
             Resolver::Devbox(devbox) => {
-                self.devbox.add(
-                    devbox,
-                    name.clone(),
-                    key,
-                    &pkg.package,
-                    system,
-                    pkg.outputs.clone(),
-                )?;
+                self.devbox
+                    .add(devbox, name, key, &pkg.package, system, pkg.outputs.clone())?;
             }
 
             Resolver::Hydra(hydra) => {
-                self.hydra.add(
-                    hydra,
-                    name.clone(),
-                    key,
-                    &pkg.package,
-                    system,
-                    pkg.outputs.clone(),
-                )?;
+                self.hydra
+                    .add(hydra, name, key, &pkg.package, system, pkg.outputs.clone())?;
             }
         }
 

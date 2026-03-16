@@ -35,12 +35,12 @@ pub struct SystemLockfile {
 }
 
 #[serde_as]
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct PackageLock {
     #[serde_as(as = "DisplayFromStr")]
     pub key: Base64Hash,
-    pub outputs: BTreeMap<String, StorePath>,
+    pub outputs: BTreeMap<Rc<str>, StorePath>,
 }
 
 impl Lockfile {

@@ -38,15 +38,10 @@ pub struct HydraResolver {
 
 struct HydraPackage {
     base: Rc<str>,
-
     project: Rc<str>,
-
     jobset: Rc<str>,
-
     job: String,
-
     system: System,
-
     outputs: Rc<BTreeSet<String>>,
 }
 
@@ -54,7 +49,7 @@ struct HydraPackage {
 #[serde(untagged)]
 enum Build {
     Ok {
-        buildoutputs: BTreeMap<String, Output>,
+        buildoutputs: BTreeMap<Rc<str>, Output>,
     },
     Err {
         error: String,
@@ -137,7 +132,7 @@ impl HydraJobs {
 }
 
 impl HydraPackage {
-    async fn resolve(&self) -> Result<BTreeMap<String, StorePath>> {
+    async fn resolve(&self) -> Result<BTreeMap<Rc<str>, StorePath>> {
         let url = format!(
             "{}/job/{}/{}/{}/latest-for/{}",
             self.base, self.project, self.jobset, self.job, self.system,
@@ -170,7 +165,7 @@ impl HydraPackage {
                     .collect::<Result<BTreeMap<_, _>>>()?;
 
                 if !self.outputs.is_empty() {
-                    outputs.retain(|name: &String, _| self.outputs.contains(name.as_str()));
+                    outputs.retain(|name, _| self.outputs.contains(name.as_ref()));
                 }
 
                 Ok(outputs)

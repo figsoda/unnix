@@ -18,7 +18,7 @@ pub async fn update(global: GlobalArgs) -> Result<()> {
     for (system, manifest) in state.manifest.systems {
         let lockfile = Rc::new(SystemLockfile::default());
         for (name, pkg) in manifest.packages {
-            jobs.add(name.clone(), pkg.key()?, &pkg, system)?;
+            jobs.add(name, pkg.key()?, &pkg, system)?;
         }
         state.lockfile.systems.insert(system, lockfile);
     }

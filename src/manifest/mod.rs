@@ -277,7 +277,12 @@ impl Manifest {
                 }
 
                 let mut resolvers = resolvers.clone();
-                resolvers.extend(surface.resolvers.clone());
+                resolvers.extend(
+                    surface
+                        .resolvers
+                        .iter()
+                        .map(|(&name, value)| (name, value.clone())),
+                );
 
                 for (name, pkg) in &surface.packages {
                     let pkg = Package::from_surface(pkg.clone(), &resolvers)?;

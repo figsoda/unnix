@@ -256,16 +256,17 @@ impl State {
         span.pb_start();
         let mut jobs = ResolverJobs::new(span);
 
-        let old = Lockfile::from_dir(&self.dir)?;
+        let mut old = Lockfile::from_dir(&self.dir)?;
         for (&system, manifest) in &self.manifest.systems {
             let lockfile = Rc::new(SystemLockfile::default());
+            let old = old.systems.get_mut(&system);
             for (name, pkg) in &manifest.packages {
                 let key = pkg.key()?;
-                if let Some(old) = old.systems.get(&system)
-                    && let Some(old) = old.inner.get(name)
+                if let Some(old) = &old
+                    && let Some((name, old)) = old.inner.remove(name)
                     && old.key == key
                 {
-                    lockfile.inner.insert(name.clone(), old.clone());
+                    lockfile.inner.insert(name, old);
                 } else {
                     jobs.add(name.clone(), key, pkg, system)?;
                 }
@@ -287,13 +288,13 @@ impl State {
 
             let lockfile = SystemLockfile::default();
             for (name, pkg) in &manifest.packages {
-                let Some((_, old)) = old.inner.remove(name) else {
+                let Some((name, old)) = old.inner.remove(name) else {
                     return Ok(false);
                 };
                 if old.key != pkg.key()? {
                     return Ok(false);
                 }
-                lockfile.inner.insert(name.clone(), old.clone());
+                lockfile.inner.insert(name, old);
             }
 
             if !old.inner.is_empty() {

@@ -53,7 +53,7 @@ struct SystemResolved {
 
 #[derive(Deserialize)]
 struct Output {
-    name: String,
+    name: Rc<str>,
     path: String,
 }
 
@@ -85,7 +85,8 @@ impl DevboxJobs {
                             let outputs = outputs
                                 .iter()
                                 .filter(|&(output, _)| {
-                                    lock.outputs.is_empty() || lock.outputs.contains(output)
+                                    lock.outputs.is_empty()
+                                        || lock.outputs.contains(output.as_ref())
                                 })
                                 .map(|(output, path)| (output.clone(), path.clone()))
                                 .collect();
@@ -144,7 +145,7 @@ impl DevboxPackage {
     async fn resolve(
         &self,
         systems: BTreeSet<System>,
-    ) -> Result<BTreeMap<System, BTreeMap<String, StorePath>>> {
+    ) -> Result<BTreeMap<System, BTreeMap<Rc<str>, StorePath>>> {
         let url = Url::parse_with_params(
             "https://search.devbox.sh/v2/resolve",
             [("name", &self.name), ("version", &self.version)],
