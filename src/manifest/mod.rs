@@ -17,7 +17,7 @@ use url::Url;
 
 use crate::{
     package::Package,
-    resolver::{Resolver, hydra::HydraResolver},
+    resolver::{Resolver, devbox::DevboxResolver, hydra::HydraResolver},
     system::{Arch, Kernel, System},
 };
 
@@ -430,6 +430,32 @@ impl<'a> SurfaceSystemManifest<'a> {
                                 bail!(name, "{e}");
                             }
                         }
+                    }
+                }
+
+                "devbox" => {
+                    let name = str_arg!(node);
+                    let mut package = "{attribute}";
+
+                    for child in node.iter_children() {
+                        assert_no_children!(child);
+
+                        let name = child.name();
+                        match name.value() {
+                            "package" => {
+                                package = str_arg!(child);
+                            }
+                            _ => {
+                                bail!(child, "invalid field");
+                            }
+                        }
+                    }
+
+                    let resolver = Resolver::Devbox(DevboxResolver {
+                        package: package.into(),
+                    });
+                    if resolvers.insert(name, resolver.into()).is_some() {
+                        bail!(node, "duplicate resolver");
                     }
                 }
 

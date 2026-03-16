@@ -17,3 +17,10 @@ fn locked_flag() {
     env.command().arg("lock").arg("--locked").assert().success();
     assert!(!is_different(env.fixture(), env.path()).unwrap());
 }
+
+#[test]
+fn devbox() {
+    let env = TestEnv::new("devbox");
+    env.command().arg("lock").arg("--locked").assert().success();
+    assert!(!is_different(env.fixture(), env.path()).unwrap());
+}

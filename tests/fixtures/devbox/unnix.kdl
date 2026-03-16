@@ -1,0 +1,19 @@
+packages {
+  libclang lib
+  nix@2.31.3 dev
+  pkg-config-unwrapped
+  matplotlib resolver=python
+}
+
+system linux {
+  packages {
+    git
+    mercurial@7
+  }
+}
+
+devbox default
+
+devbox python {
+  package "python314Packages.{attribute}"
+}

@@ -1,3 +1,4 @@
+pub mod devbox;
 pub mod hydra;
 
 use std::{collections::HashMap, rc::Rc};
@@ -5,24 +6,30 @@ use std::{collections::HashMap, rc::Rc};
 use miette::{IntoDiagnostic, Result};
 use serde::Serialize;
 use strfmt::strfmt;
+use tokio::try_join;
 use tracing::Span;
 use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     lockfile::Lockfile,
     package::{Base64Hash, Package},
-    resolver::hydra::{HydraJobs, HydraResolver},
+    resolver::{
+        devbox::{DevboxJobs, DevboxResolver},
+        hydra::{HydraJobs, HydraResolver},
+    },
     system::System,
 };
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "type")]
 pub enum Resolver {
+    Devbox(DevboxResolver),
     Hydra(HydraResolver),
 }
 
 pub struct ResolverJobs {
     span: Span,
+    devbox: DevboxJobs,
     hydra: HydraJobs,
 }
 
@@ -30,13 +37,16 @@ impl ResolverJobs {
     pub fn new(span: Span) -> Self {
         Self {
             span,
+            devbox: DevboxJobs::default(),
             hydra: HydraJobs::default(),
         }
     }
 
     pub async fn resolve(self, lockfile: &Lockfile) -> Result<()> {
-        self.hydra.resolve(&self.span, lockfile).await?;
-
+        try_join!(
+            self.devbox.resolve(&self.span, lockfile),
+            self.hydra.resolve(&self.span, lockfile),
+        )?;
         Ok(())
     }
 
@@ -50,6 +60,17 @@ impl ResolverJobs {
         self.span.pb_inc_length(1);
 
         match pkg.resolver.as_ref() {
+            Resolver::Devbox(devbox) => {
+                self.devbox.add(
+                    devbox,
+                    name.clone(),
+                    key,
+                    &pkg.attribute,
+                    system,
+                    pkg.outputs.clone(),
+                )?;
+            }
+
             Resolver::Hydra(hydra) => {
                 self.hydra.add(
                     hydra,
