@@ -46,7 +46,7 @@ struct SurfaceSystemManifest<'a> {
 #[derive(Clone)]
 struct SurfacePackage<'a> {
     resolver: &'a str,
-    attribute: Rc<str>,
+    package: Rc<str>,
     outputs: Rc<BTreeSet<String>>,
 }
 
@@ -336,7 +336,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                         assert_no_children!(child);
 
                         let mut resolver = None;
-                        let mut attribute = None;
+                        let mut package = None;
                         let mut outputs = BTreeSet::new();
 
                         for entry in child.entries() {
@@ -345,8 +345,8 @@ impl<'a> SurfaceSystemManifest<'a> {
                                     "resolver" => {
                                         resolver = Some(str!(entry));
                                     }
-                                    "attribute" => {
-                                        attribute = Some(str!(entry));
+                                    "package" => {
+                                        package = Some(str!(entry));
                                     }
                                     _ => {
                                         bail!(entry, "invalid property");
@@ -359,7 +359,7 @@ impl<'a> SurfaceSystemManifest<'a> {
 
                         let pkg = SurfacePackage {
                             resolver: resolver.unwrap_or("default"),
-                            attribute: attribute.unwrap_or(child.name().value()).into(),
+                            package: package.unwrap_or(child.name().value()).into(),
                             outputs: Rc::new(outputs),
                         };
                         if packages.insert(child.name().value().into(), pkg).is_some() {
@@ -435,7 +435,7 @@ impl<'a> SurfaceSystemManifest<'a> {
 
                 "devbox" => {
                     let name = str_arg!(node);
-                    let mut package = "{attribute}";
+                    let mut package = "{package}";
 
                     for child in node.iter_children() {
                         assert_no_children!(child);
@@ -466,7 +466,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                     let mut base = None;
                     let mut project = None;
                     let mut jobset = None;
-                    let mut job = "{attribute}.{system}";
+                    let mut job = "{package}.{system}";
 
                     for child in node.iter_children() {
                         assert_no_children!(child);
@@ -531,7 +531,7 @@ impl Package {
         resolvers: &BTreeMap<&str, Rc<Resolver>>,
     ) -> Result<Rc<Package>> {
         Ok(Rc::new(Package {
-            attribute: pkg.attribute,
+            package: pkg.package,
             outputs: pkg.outputs,
             resolver: resolvers
                 .get(pkg.resolver)

@@ -65,7 +65,7 @@ impl ResolverJobs {
                     devbox,
                     name.clone(),
                     key,
-                    &pkg.attribute,
+                    &pkg.package,
                     system,
                     pkg.outputs.clone(),
                 )?;
@@ -76,7 +76,7 @@ impl ResolverJobs {
                     hydra,
                     name.clone(),
                     key,
-                    &pkg.attribute,
+                    &pkg.package,
                     system,
                     pkg.outputs.clone(),
                 )?;
@@ -93,15 +93,15 @@ impl Default for Resolver {
             base: "https://hydra.nixos.org".into(),
             project: "nixpkgs".into(),
             jobset: "unstable".into(),
-            job: "{attribute}.{system}".into(),
+            job: "{package}.{system}".into(),
         })
     }
 }
 
-fn format(template: &str, attribute: &str, system: System) -> Result<String> {
+fn format(template: &str, package: &str, system: System) -> Result<String> {
     let system = system.to_string();
     let mut params = HashMap::<String, _>::new();
-    params.insert("attribute".into(), attribute);
+    params.insert("package".into(), package);
     params.insert("system".into(), &system);
     strfmt(template, &params).into_diagnostic()
 }

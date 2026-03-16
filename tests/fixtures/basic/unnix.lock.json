@@ -3,19 +3,19 @@
  "systems": {
   "aarch64-darwin": {
    "libclang": {
-    "key": "M5OYb3APZGzSczOYDrfZYtuyT45TBDhLoOZgWF2HBdU=",
+    "key": "mRSvNYIAyQykbKXZ2jEwGOXoGtgOfWjZBaKQlCv2GB8=",
     "outputs": {
      "lib": "p2f715285hm39x2jkkh5bwmpfz2x2wkr-clang-21.1.8-lib"
     }
    },
    "nix": {
-    "key": "IbnzApkQI2Xp69HcBvlsiquDY/MmN9UDRBetMeFIvzE=",
+    "key": "xmmmcCPXNZ58JqhR5RCN+jjOHGOMa/MbS42VKcKZMNI=",
     "outputs": {
      "dev": "kk7ks8kmdd9n50swx8iv4mdsdw8lf718-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "LiSiaIgPfyeqVGxNBOCfwCGQFp9o6PQqhLFWF5zKf6U=",
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
     "outputs": {
      "doc": "acg8dgva4y915w5dhfyxrsxrmhsz11a7-pkg-config-0.29.2-doc",
      "man": "l6q80v9ik8cs0v9vgi57r5diyfhb5g4l-pkg-config-0.29.2-man",
@@ -25,7 +25,7 @@
   },
   "aarch64-linux": {
    "git": {
-    "key": "iAy+/F94zixWNfw3RD9Q/aof+ygv/9SJ+4rCxEyRKQE=",
+    "key": "/L4kI/14cbnY4yFsqP1hlTyAaKuVdIDeizqB3vseawo=",
     "outputs": {
      "debug": "xr7sgggqixdji66nhax03lwmk25ms7af-git-2.53.0-debug",
      "doc": "lspm2ph3iad5y9irmh2wms6bm3nhhy76-git-2.53.0-doc",
@@ -33,25 +33,25 @@
     }
    },
    "libclang": {
-    "key": "M5OYb3APZGzSczOYDrfZYtuyT45TBDhLoOZgWF2HBdU=",
+    "key": "mRSvNYIAyQykbKXZ2jEwGOXoGtgOfWjZBaKQlCv2GB8=",
     "outputs": {
      "lib": "4gcg9r9s9mxz6sxy0c6r7b14f1zqc292-clang-21.1.8-lib"
     }
    },
    "mercurial": {
-    "key": "jJ17TD9E8RaW4oIKOLV114LUSUFP1NsuAfWS/glMg+Q=",
+    "key": "LXa1nHIRaAV1clm32fP+sIbnqId5GReHU27IXaP5z1c=",
     "outputs": {
      "out": "4lp7534xmsv2iswywcsc6vqz09wgnd4w-mercurial-7.1.2"
     }
    },
    "nix": {
-    "key": "IbnzApkQI2Xp69HcBvlsiquDY/MmN9UDRBetMeFIvzE=",
+    "key": "xmmmcCPXNZ58JqhR5RCN+jjOHGOMa/MbS42VKcKZMNI=",
     "outputs": {
      "dev": "syc360his15aznsik5y8dv4g3j9sbl34-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "LiSiaIgPfyeqVGxNBOCfwCGQFp9o6PQqhLFWF5zKf6U=",
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
     "outputs": {
      "doc": "m75wjizzwnam9m1k3vxxwv0w8s16lbyc-pkg-config-0.29.2-doc",
      "man": "snpi7dbcbhwsbwqxnqa2z42khv7q13ny-pkg-config-0.29.2-man",
@@ -61,7 +61,7 @@
   },
   "x86_64-linux": {
    "git": {
-    "key": "iAy+/F94zixWNfw3RD9Q/aof+ygv/9SJ+4rCxEyRKQE=",
+    "key": "/L4kI/14cbnY4yFsqP1hlTyAaKuVdIDeizqB3vseawo=",
     "outputs": {
      "debug": "i9fi7yqx2z2dryn80w5pr4b1v4nmyida-git-2.53.0-debug",
      "doc": "frqc9w8q0dxsg7b8w3j0cv1lb9bd6xww-git-2.53.0-doc",
@@ -69,25 +69,25 @@
     }
    },
    "libclang": {
-    "key": "M5OYb3APZGzSczOYDrfZYtuyT45TBDhLoOZgWF2HBdU=",
+    "key": "mRSvNYIAyQykbKXZ2jEwGOXoGtgOfWjZBaKQlCv2GB8=",
     "outputs": {
      "lib": "f160pmgwc710rrc5c2vjgach0xfxa4nm-clang-21.1.8-lib"
     }
    },
    "mercurial": {
-    "key": "jJ17TD9E8RaW4oIKOLV114LUSUFP1NsuAfWS/glMg+Q=",
+    "key": "LXa1nHIRaAV1clm32fP+sIbnqId5GReHU27IXaP5z1c=",
     "outputs": {
      "out": "n9mxgjjkc5nigvgpx39ajllk7dwkn43i-mercurial-7.1.2"
     }
    },
    "nix": {
-    "key": "IbnzApkQI2Xp69HcBvlsiquDY/MmN9UDRBetMeFIvzE=",
+    "key": "xmmmcCPXNZ58JqhR5RCN+jjOHGOMa/MbS42VKcKZMNI=",
     "outputs": {
      "dev": "a8xpy4d3mizld33vmf9x7335jn87cpk3-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "LiSiaIgPfyeqVGxNBOCfwCGQFp9o6PQqhLFWF5zKf6U=",
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
     "outputs": {
      "doc": "pfisgzym9gl58qc503j29zqb9aw5hxf8-pkg-config-0.29.2-doc",
      "man": "1svlcw4ppqnixgkdirxhry8b7r4p2rrb-pkg-config-0.29.2-man",

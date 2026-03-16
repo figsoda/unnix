@@ -3,26 +3,26 @@
  "systems": {
   "aarch64-darwin": {
    "libclang": {
-    "key": "suHNBm2zv3F/STdPb0Oyt0SRuw8I5xcJqZ/ZsFthHfw=",
+    "key": "i6lbQJa4vPlj78QzdLjayXTqtNd2ifNui6hwoOx9aiU=",
     "outputs": {
      "lib": "p2f715285hm39x2jkkh5bwmpfz2x2wkr-clang-21.1.8-lib"
     }
    },
    "matplotlib": {
-    "key": "C/RaufozVfoy4V/d8VeS1hbh6GlZAA0ZYw2ZT+Ytfz4=",
+    "key": "M7b0QJbH3AriCvvqaVRT/gDqwy4x53eWwFkWQTtuPDw=",
     "outputs": {
      "dist": "z0jy5vimcy2nf9w4jkwb3ayv4770v9fc-python3.14-matplotlib-3.10.8-dist",
      "out": "576ivzrk289n2zra78h919vkdfidrfz1-python3.14-matplotlib-3.10.8"
     }
    },
    "nix@2.31.3": {
-    "key": "+mbH2pWdP9Geu3LFRGMWBaufTQCBoSWTmR+LxIYPp+Q=",
+    "key": "1fsLkeMC0oZcTP6UImJoXZn2qCAndr9aFxaHkAE6Pbw=",
     "outputs": {
      "dev": "kk7ks8kmdd9n50swx8iv4mdsdw8lf718-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "TLLbghrE8fhK9CsBXb8bHaGWGdx3wNzSRjpTLaF3wN0=",
+    "key": "PUsbOJXDHKtpdTPU6nm26bGOhxZEyQnVhoWR1yFcKvE=",
     "outputs": {
      "doc": "acg8dgva4y915w5dhfyxrsxrmhsz11a7-pkg-config-0.29.2-doc",
      "man": "l6q80v9ik8cs0v9vgi57r5diyfhb5g4l-pkg-config-0.29.2-man",
@@ -32,7 +32,7 @@
   },
   "aarch64-linux": {
    "git": {
-    "key": "YJKovFLqBtLCl4LaIVQ9dhKGNk+SYio8K6F4leTSdy4=",
+    "key": "YvP2hTPyBRMrGQmLfZBtiIPqD2C2mj7P19+sH9JKWSY=",
     "outputs": {
      "debug": "xr7sgggqixdji66nhax03lwmk25ms7af-git-2.53.0-debug",
      "doc": "lspm2ph3iad5y9irmh2wms6bm3nhhy76-git-2.53.0-doc",
@@ -40,32 +40,32 @@
     }
    },
    "libclang": {
-    "key": "suHNBm2zv3F/STdPb0Oyt0SRuw8I5xcJqZ/ZsFthHfw=",
+    "key": "i6lbQJa4vPlj78QzdLjayXTqtNd2ifNui6hwoOx9aiU=",
     "outputs": {
      "lib": "4gcg9r9s9mxz6sxy0c6r7b14f1zqc292-clang-21.1.8-lib"
     }
    },
    "matplotlib": {
-    "key": "C/RaufozVfoy4V/d8VeS1hbh6GlZAA0ZYw2ZT+Ytfz4=",
+    "key": "M7b0QJbH3AriCvvqaVRT/gDqwy4x53eWwFkWQTtuPDw=",
     "outputs": {
      "dist": "qkijd5nr3411gpizcp7gz2j9xipi6p5h-python3.14-matplotlib-3.10.8-dist",
      "out": "qcbaqmhmh34riszhjb5awm3hyqm3aa8w-python3.14-matplotlib-3.10.8"
     }
    },
    "mercurial@7": {
-    "key": "1W2UGN++zozsUPREoES4tDpEXP6KZOYpL42zZUtVEx0=",
+    "key": "ipgtIYAaQyXbevYwEAkILuyJP+lwHWvJsKMVH0yTTiE=",
     "outputs": {
      "out": "4lp7534xmsv2iswywcsc6vqz09wgnd4w-mercurial-7.1.2"
     }
    },
    "nix@2.31.3": {
-    "key": "+mbH2pWdP9Geu3LFRGMWBaufTQCBoSWTmR+LxIYPp+Q=",
+    "key": "1fsLkeMC0oZcTP6UImJoXZn2qCAndr9aFxaHkAE6Pbw=",
     "outputs": {
      "dev": "syc360his15aznsik5y8dv4g3j9sbl34-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "TLLbghrE8fhK9CsBXb8bHaGWGdx3wNzSRjpTLaF3wN0=",
+    "key": "PUsbOJXDHKtpdTPU6nm26bGOhxZEyQnVhoWR1yFcKvE=",
     "outputs": {
      "doc": "m75wjizzwnam9m1k3vxxwv0w8s16lbyc-pkg-config-0.29.2-doc",
      "man": "snpi7dbcbhwsbwqxnqa2z42khv7q13ny-pkg-config-0.29.2-man",
@@ -75,7 +75,7 @@
   },
   "x86_64-linux": {
    "git": {
-    "key": "YJKovFLqBtLCl4LaIVQ9dhKGNk+SYio8K6F4leTSdy4=",
+    "key": "YvP2hTPyBRMrGQmLfZBtiIPqD2C2mj7P19+sH9JKWSY=",
     "outputs": {
      "debug": "i9fi7yqx2z2dryn80w5pr4b1v4nmyida-git-2.53.0-debug",
      "doc": "frqc9w8q0dxsg7b8w3j0cv1lb9bd6xww-git-2.53.0-doc",
@@ -83,32 +83,32 @@
     }
    },
    "libclang": {
-    "key": "suHNBm2zv3F/STdPb0Oyt0SRuw8I5xcJqZ/ZsFthHfw=",
+    "key": "i6lbQJa4vPlj78QzdLjayXTqtNd2ifNui6hwoOx9aiU=",
     "outputs": {
      "lib": "f160pmgwc710rrc5c2vjgach0xfxa4nm-clang-21.1.8-lib"
     }
    },
    "matplotlib": {
-    "key": "C/RaufozVfoy4V/d8VeS1hbh6GlZAA0ZYw2ZT+Ytfz4=",
+    "key": "M7b0QJbH3AriCvvqaVRT/gDqwy4x53eWwFkWQTtuPDw=",
     "outputs": {
      "dist": "251b88rvp1lr5i7wkm7zzvfk2rp5yg2b-python3.14-matplotlib-3.10.8-dist",
      "out": "mlyg8p7pscdky1n5pphdxblr93bg4vc6-python3.14-matplotlib-3.10.8"
     }
    },
    "mercurial@7": {
-    "key": "1W2UGN++zozsUPREoES4tDpEXP6KZOYpL42zZUtVEx0=",
+    "key": "ipgtIYAaQyXbevYwEAkILuyJP+lwHWvJsKMVH0yTTiE=",
     "outputs": {
      "out": "n9mxgjjkc5nigvgpx39ajllk7dwkn43i-mercurial-7.1.2"
     }
    },
    "nix@2.31.3": {
-    "key": "+mbH2pWdP9Geu3LFRGMWBaufTQCBoSWTmR+LxIYPp+Q=",
+    "key": "1fsLkeMC0oZcTP6UImJoXZn2qCAndr9aFxaHkAE6Pbw=",
     "outputs": {
      "dev": "a8xpy4d3mizld33vmf9x7335jn87cpk3-nix-2.31.3-dev"
     }
    },
    "pkg-config-unwrapped": {
-    "key": "TLLbghrE8fhK9CsBXb8bHaGWGdx3wNzSRjpTLaF3wN0=",
+    "key": "PUsbOJXDHKtpdTPU6nm26bGOhxZEyQnVhoWR1yFcKvE=",
     "outputs": {
      "doc": "pfisgzym9gl58qc503j29zqb9aw5hxf8-pkg-config-0.29.2-doc",
      "man": "1svlcw4ppqnixgkdirxhry8b7r4p2rrb-pkg-config-0.29.2-man",

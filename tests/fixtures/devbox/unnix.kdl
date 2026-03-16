@@ -15,5 +15,5 @@ system linux {
 devbox default
 
 devbox python {
-  package "python314Packages.{attribute}"
+  package "python314Packages.{package}"
 }

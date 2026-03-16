@@ -10,19 +10,19 @@ Manifest {
         }: SystemManifest {
             packages: {
                 "a": Package {
-                    attribute: "a",
+                    package: "a",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "b": Package {
-                    attribute: "b",
+                    package: "b",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
@@ -65,19 +65,19 @@ Manifest {
         }: SystemManifest {
             packages: {
                 "a": Package {
-                    attribute: "a",
+                    package: "a",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "b": Package {
-                    attribute: "b",
+                    package: "b",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
@@ -120,19 +120,19 @@ Manifest {
         }: SystemManifest {
             packages: {
                 "a": Package {
-                    attribute: "a",
+                    package: "a",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
                             base: "d",
                             project: "e",
                             jobset: "f",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "b": Package {
-                    attribute: "b",
+                    package: "b",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {

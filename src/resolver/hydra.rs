@@ -114,7 +114,7 @@ impl HydraJobs {
         hydra: &HydraResolver,
         name: Rc<str>,
         key: Base64Hash,
-        attribute: &str,
+        package: &str,
         system: System,
         outputs: Rc<BTreeSet<String>>,
     ) -> Result<()> {
@@ -122,7 +122,7 @@ impl HydraJobs {
             base: hydra.base.clone(),
             project: hydra.project.clone(),
             jobset: hydra.jobset.clone(),
-            job: format(&hydra.job, attribute, system)?,
+            job: format(&hydra.job, package, system)?,
             system,
             outputs,
         };

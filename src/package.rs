@@ -14,7 +14,7 @@ use crate::resolver::Resolver;
 
 #[derive(Debug, Serialize)]
 pub struct Package {
-    pub attribute: Rc<str>,
+    pub package: Rc<str>,
     pub outputs: Rc<BTreeSet<String>>,
     pub resolver: Rc<Resolver>,
 }

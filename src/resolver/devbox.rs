@@ -110,12 +110,12 @@ impl DevboxJobs {
         devbox: &DevboxResolver,
         name: Rc<str>,
         key: Base64Hash,
-        attribute: &str,
+        package: &str,
         system: System,
         outputs: Rc<BTreeSet<String>>,
     ) -> Result<()> {
-        let pkg = format(&devbox.package, attribute, system)?;
-        let pkg = if let Some((name, version)) = attribute.rsplit_once('@')
+        let pkg = format(&devbox.package, package, system)?;
+        let pkg = if let Some((name, version)) = package.rsplit_once('@')
             && !version.is_empty()
         {
             DevboxPackage {

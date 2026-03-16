@@ -10,7 +10,7 @@ Manifest {
         }: SystemManifest {
             packages: {
                 "libclang": Package {
-                    attribute: "libclang",
+                    package: "libclang",
                     outputs: {
                         "lib",
                     },
@@ -19,12 +19,12 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "nix": Package {
-                    attribute: "nix",
+                    package: "nix",
                     outputs: {
                         "dev",
                     },
@@ -33,12 +33,12 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "pkg-config-unwrapped": Package {
-                    attribute: "pkg-config-unwrapped",
+                    package: "pkg-config-unwrapped",
                     outputs: {
                         "out",
                     },
@@ -47,7 +47,7 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
@@ -104,7 +104,7 @@ Manifest {
         }: SystemManifest {
             packages: {
                 "git": Package {
-                    attribute: "git",
+                    package: "git",
                     outputs: {
                         "out",
                     },
@@ -113,12 +113,12 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "libclang": Package {
-                    attribute: "libclang",
+                    package: "libclang",
                     outputs: {
                         "lib",
                     },
@@ -127,24 +127,24 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "mercurial": Package {
-                    attribute: "mercurial",
+                    package: "mercurial",
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "nix": Package {
-                    attribute: "nix",
+                    package: "nix",
                     outputs: {
                         "dev",
                     },
@@ -153,12 +153,12 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
                 "pkg-config-unwrapped": Package {
-                    attribute: "pkg-config-unwrapped",
+                    package: "pkg-config-unwrapped",
                     outputs: {
                         "out",
                     },
@@ -167,7 +167,7 @@ Manifest {
                             base: "https://hydra.nixos.org",
                             project: "nixpkgs",
                             jobset: "unstable",
-                            job: "{attribute}.{system}",
+                            job: "{package}.{system}",
                         },
                     ),
                 },
