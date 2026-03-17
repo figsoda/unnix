@@ -61,7 +61,7 @@ pub struct InitArgs {
     pub packages: Vec<String>,
 
     /// Specify the list of supported systems
-    #[arg(short, long, num_args = 1 ..)]
+    #[arg(long, num_args = 1 ..)]
     pub systems: Vec<String>,
 }
 
