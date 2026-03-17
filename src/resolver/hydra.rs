@@ -3,7 +3,6 @@ use std::{
     rc::Rc,
 };
 
-use dashmap::DashMap;
 use miette::{IntoDiagnostic, Result, WrapErr, miette};
 use reqwest::{Method, header::ACCEPT};
 use serde::{Deserialize, Serialize};
@@ -25,7 +24,7 @@ use crate::{
 
 #[derive(Default)]
 pub struct HydraJobs {
-    jobs: BTreeMap<System, BTreeMap<Rc<str>, (Base64Hash, HydraPackage)>>,
+    jobs: BTreeMap<Rc<str>, BTreeMap<System, Vec<HydraPackage>>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -37,11 +36,11 @@ pub struct HydraResolver {
 }
 
 struct HydraPackage {
-    base: Rc<str>,
+    name: Rc<str>,
+    key: Base64Hash,
     project: Rc<str>,
     jobset: Rc<str>,
     job: String,
-    system: System,
     outputs: Rc<BTreeSet<String>>,
 }
 
@@ -63,34 +62,37 @@ struct Output {
 
 impl HydraJobs {
     pub async fn resolve(self, span: &Span, lockfile: &Lockfile) -> Result<()> {
-        let locks = Rc::new(DashMap::new());
         let local = LocalSet::new();
         let mut tasks = JoinSet::new();
 
-        for (system, jobs) in self.jobs {
-            let lockfile = &lockfile.systems[&system];
-            for (name, (key, job)) in jobs {
-                let lockfile = lockfile.clone();
-                let locks = locks.clone();
-                let span = span.clone();
-                tasks.spawn_local_on(
-                    async move {
-                        // allow at most 4 concurrent clients per hydra instance
-                        let lock = locks
-                            .entry(job.base.clone())
-                            .or_insert_with(|| Rc::new(Semaphore::new(4)))
-                            .value()
-                            .clone();
-                        let _permit = lock.acquire().await.into_diagnostic()?;
+        for (base, jobs) in self.jobs {
+            // allow at most 4 concurrent clients per hydra instance
+            let semaphore = Rc::new(Semaphore::new(4));
 
-                        let outputs = job.resolve().await?;
-                        lockfile.inner.insert(name, PackageLock { key, outputs });
-                        span.pb_inc(1);
-
-                        Result::<_>::Ok(())
-                    },
-                    &local,
-                );
+            for (system, pkgs) in jobs {
+                let lockfile = &lockfile.systems[&system];
+                for pkg in pkgs {
+                    let base = base.clone();
+                    let lockfile = lockfile.clone();
+                    let semaphore = semaphore.clone();
+                    let span = span.clone();
+                    tasks.spawn_local_on(
+                        async move {
+                            let _permit = semaphore.acquire().await.into_diagnostic()?;
+                            let outputs = pkg.resolve(&base, system).await?;
+                            lockfile.inner.insert(
+                                pkg.name,
+                                PackageLock {
+                                    key: pkg.key,
+                                    outputs,
+                                },
+                            );
+                            span.pb_inc(1);
+                            Result::<_>::Ok(())
+                        },
+                        &local,
+                    );
+                }
             }
         }
 
@@ -114,28 +116,30 @@ impl HydraJobs {
         outputs: Rc<BTreeSet<String>>,
     ) -> Result<()> {
         let pkg = HydraPackage {
-            base: hydra.base.clone(),
+            name,
+            key,
             project: hydra.project.clone(),
             jobset: hydra.jobset.clone(),
             job: format(&hydra.job, package, system)?,
-            system,
             outputs,
         };
 
         self.jobs
+            .entry(hydra.base.clone())
+            .or_default()
             .entry(system)
             .or_default()
-            .insert(name, (key, pkg));
+            .push(pkg);
 
         Ok(())
     }
 }
 
 impl HydraPackage {
-    async fn resolve(&self) -> Result<BTreeMap<Rc<str>, StorePath>> {
+    async fn resolve(&self, base: &str, system: System) -> Result<BTreeMap<Rc<str>, StorePath>> {
         let url = format!(
-            "{}/job/{}/{}/{}/latest-for/{}",
-            self.base, self.project, self.jobset, self.job, self.system,
+            "{base}/job/{}/{}/{}/latest-for/{system}",
+            self.project, self.jobset, self.job,
         );
 
         debug!(url);
@@ -151,9 +155,8 @@ impl HydraPackage {
             .into_diagnostic()
             .wrap_err_with(|| {
                 miette!(
-                    "failed to parse hydra response for {} on {}",
+                    "failed to parse hydra response for {} on {system}",
                     self.job,
-                    self.system,
                 )
             })?;
 
@@ -173,8 +176,8 @@ impl HydraPackage {
 
             Build::Err { error } => {
                 let e = miette!(error).wrap_err(format!(
-                    "no successful build found for {} on {}",
-                    self.job, self.system,
+                    "no successful build found for {} on {system}",
+                    self.job,
                 ));
                 Err(e)
             }
