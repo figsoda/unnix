@@ -21,6 +21,13 @@
      "dev": "kk7ks8kmdd9n50swx8iv4mdsdw8lf718-nix-2.31.3-dev"
     }
    },
+   "numpy": {
+    "key": "VeRFi+g+sD12E9RMSmyJmAtLrNovLesKBJS+i6VIavk=",
+    "outputs": {
+     "dist": "9nr3992sr58jmrn0qlndwzkm3d9mw43c-python3.14-numpy-2.4.2-dist",
+     "out": "5l5j9giv6v5lmqdnrars2lsyw2pmvghq-python3.14-numpy-2.4.2"
+    }
+   },
    "pkg-config-unwrapped": {
     "key": "PUsbOJXDHKtpdTPU6nm26bGOhxZEyQnVhoWR1yFcKvE=",
     "outputs": {
@@ -64,6 +71,13 @@
      "dev": "syc360his15aznsik5y8dv4g3j9sbl34-nix-2.31.3-dev"
     }
    },
+   "numpy": {
+    "key": "VeRFi+g+sD12E9RMSmyJmAtLrNovLesKBJS+i6VIavk=",
+    "outputs": {
+     "dist": "9rbqcamccwxcwnyhkrv6004rfcb488l8-python3.14-numpy-2.4.2-dist",
+     "out": "x5c0g3is7rcx1v7k9v1jla318qlamiq4-python3.14-numpy-2.4.2"
+    }
+   },
    "pkg-config-unwrapped": {
     "key": "PUsbOJXDHKtpdTPU6nm26bGOhxZEyQnVhoWR1yFcKvE=",
     "outputs": {
@@ -105,6 +119,13 @@
     "key": "1fsLkeMC0oZcTP6UImJoXZn2qCAndr9aFxaHkAE6Pbw=",
     "outputs": {
      "dev": "a8xpy4d3mizld33vmf9x7335jn87cpk3-nix-2.31.3-dev"
+    }
+   },
+   "numpy": {
+    "key": "VeRFi+g+sD12E9RMSmyJmAtLrNovLesKBJS+i6VIavk=",
+    "outputs": {
+     "dist": "qmg6k5dnsp62fmwi14jx7v11jzz37nns-python3.14-numpy-2.4.2-dist",
+     "out": "ax62xdxmjkhjsbbz46mggybj2accbfva-python3.14-numpy-2.4.2"
     }
    },
    "pkg-config-unwrapped": {

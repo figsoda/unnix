@@ -335,7 +335,21 @@ impl<'a> SurfaceSystemManifest<'a> {
             let name = node.name();
             match name.value() {
                 "packages" => {
-                    assert_no_entries!(node);
+                    let mut default_resolver = "default";
+                    for entry in node.entries() {
+                        if let Some(name) = entry.name() {
+                            match name.value() {
+                                "resolver" => {
+                                    default_resolver = str!(entry);
+                                }
+                                _ => {
+                                    bail!(entry, "invalid property");
+                                }
+                            }
+                        } else {
+                            bail!(entry, "unexpected argument");
+                        }
+                    }
 
                     for child in node.iter_children() {
                         assert_no_children!(child);
@@ -363,7 +377,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                         }
 
                         let pkg = SurfacePackage {
-                            resolver: resolver.unwrap_or("default"),
+                            resolver: resolver.unwrap_or(default_resolver),
                             package: package.unwrap_or(child.name().value()).into(),
                             outputs: Rc::new(outputs),
                         };

@@ -2,7 +2,11 @@ packages {
   libclang lib
   nix@2.31.3 dev
   pkg-config-unwrapped
-  matplotlib resolver=python
+}
+
+packages resolver=python {
+  matplotlib
+  numpy
 }
 
 system linux {
