@@ -465,9 +465,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                 }
 
                 "hydra" => {
-                    let entry = arg!(node);
-                    let name = str!(entry);
-
+                    let name = str_arg!(node);
                     let mut base = None;
                     let mut project = None;
                     let mut jobset = None;
@@ -491,7 +489,7 @@ impl<'a> SurfaceSystemManifest<'a> {
                                 job = str_arg!(child);
                             }
                             _ => {
-                                bail!(entry, "invalid field");
+                                bail!(child, "invalid field");
                             }
                         }
                     }
