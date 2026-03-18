@@ -7,7 +7,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt;
 use crate::{cli::GlobalArgs, lockfile::SystemLockfile, resolver::ResolverJobs, state::State};
 
 pub async fn update(global: GlobalArgs) -> Result<()> {
-    let mut state = State::new(global)?;
+    let mut state = State::new(global, None)?;
 
     let span = info_span!("update", indicatif.pb_show = Empty);
     span.pb_set_message("updating lockfile");

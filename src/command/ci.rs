@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub async fn ci(global: GlobalArgs, args: CiArgs) -> Result<()> {
-    let state = State::new_locked(global).await?;
+    let state = State::new_locked(global, args.system.try_into()?).await?;
     match args.command {
         CiCommand::Github => github(state).await,
     }

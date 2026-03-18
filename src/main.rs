@@ -51,8 +51,8 @@ async fn main() -> Result<()> {
 
     let args = Args::parse();
     match args.command {
-        Command::Cache => {
-            command::cache(args.global).await?;
+        Command::Cache(cache_args) => {
+            command::cache(args.global, cache_args).await?;
         }
         Command::Ci(ci_args) => {
             command::ci(args.global, ci_args).await?;

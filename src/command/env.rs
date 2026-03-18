@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub async fn env(global: GlobalArgs, args: EnvArgs) -> Result<()> {
-    let state = State::new_locked(global).await?;
+    let state = State::new_locked(global, args.system.try_into()?).await?;
 
     let mut cmd = if cfg!(target_os = "linux") {
         let mut cmd = state.bwrap();

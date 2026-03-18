@@ -51,22 +51,26 @@ pub static HTTP_CLIENT: LazyLock<ClientWithMiddleware> = LazyLock::new(|| {
 });
 
 impl State {
-    pub fn new(global: GlobalArgs) -> Result<Self> {
+    pub fn new(global: GlobalArgs, system: Option<System>) -> Result<Self> {
         let dir = global.directory.unwrap_or_else(|| ".".into());
         let manifest = Manifest::from_dir(&dir)?;
+        let system = match system {
+            Some(system) => system,
+            None => System::host()?,
+        };
 
         Ok(Self {
             dir,
             lockfile: Lockfile::default(),
             manifest,
             store: Arc::new(Store::new()?),
-            system: System::host()?,
+            system,
         })
     }
 
-    pub async fn new_locked(global: GlobalArgs) -> Result<Self> {
+    pub async fn new_locked(global: GlobalArgs, system: Option<System>) -> Result<Self> {
         let locked = global.locked;
-        let mut state = State::new(global)?;
+        let mut state = State::new(global, system)?;
         if locked {
             if !state.locked().await? {
                 bail!("cannot update lockfile with --locked");

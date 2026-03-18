@@ -1,5 +1,8 @@
+use std::str::FromStr;
+
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
+use miette::IntoDiagnostic;
 
 /// Use Nix packages without installing Nix
 #[derive(Parser)]
@@ -15,7 +18,7 @@ pub struct Args {
 #[derive(Subcommand)]
 pub enum Command {
     /// Cache everything required for `unnix env` on the current system
-    Cache,
+    Cache(CacheArgs),
 
     /// Set up environment variables for CI
     Ci(CiArgs),
@@ -37,9 +40,18 @@ pub enum Command {
 }
 
 #[derive(Parser)]
+pub struct CacheArgs {
+    #[command(flatten)]
+    pub system: SystemArgs,
+}
+
+#[derive(Parser)]
 pub struct CiArgs {
     #[command(subcommand)]
     pub command: CiCommand,
+
+    #[command(flatten)]
+    pub system: SystemArgs,
 }
 
 #[derive(Subcommand)]
@@ -52,6 +64,9 @@ pub enum CiCommand {
 pub struct EnvArgs {
     /// Specify the command to run instead of $SHELL
     pub command: Option<Vec<String>>,
+
+    #[command(flatten)]
+    pub system: SystemArgs,
 }
 
 #[derive(Parser)]
@@ -74,7 +89,13 @@ pub struct PrintArgs {
 #[derive(Subcommand)]
 pub enum PrintCommand {
     /// Print shell code for the development environment
-    Env,
+    Env(PrintEnvArgs),
+}
+
+#[derive(Parser)]
+pub struct PrintEnvArgs {
+    #[command(flatten)]
+    pub system: SystemArgs,
 }
 
 #[derive(Parser)]
@@ -86,4 +107,22 @@ pub struct GlobalArgs {
     /// Assert the lockfile is up to date
     #[arg(long, global = true)]
     pub locked: bool,
+}
+
+#[derive(Parser)]
+pub struct SystemArgs {
+    /// Specify the host system of the packages
+    #[arg(long, env = "UNNIX_SYSTEM", global = true)]
+    pub system: Option<String>,
+}
+
+impl<T: FromStr> TryInto<Option<T>> for SystemArgs
+where
+    Result<Option<T>, T::Err>: IntoDiagnostic<Option<T>, T::Err>,
+{
+    type Error = miette::Error;
+
+    fn try_into(self) -> Result<Option<T>, Self::Error> {
+        self.system.map(|x| x.parse()).transpose().into_diagnostic()
+    }
 }
