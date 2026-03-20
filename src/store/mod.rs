@@ -264,8 +264,10 @@ impl Store {
         match var(name) {
             Ok(old) if val.is_empty() => Ok(old),
             Ok(old) => {
-                val.push_str(sep);
-                val.push_str(&old);
+                if !old.is_empty() {
+                    val.push_str(sep);
+                    val.push_str(&old);
+                }
                 Ok(val)
             }
             Err(VarError::NotPresent) => Ok(val),
