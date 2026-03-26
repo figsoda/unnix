@@ -1,0 +1,150 @@
+{
+ "version": 0,
+ "systems": {
+  "aarch64-darwin": {
+   "curl": {
+    "key": "C9N5WQUPeIbUqUamv3qq8s81Xjon9CmWM9j4dJPzzgw=",
+    "outputs": {
+     "bin": "gki71gmvlp9d86rqh8b4b6wp7wg396qg-curl-8.18.0-bin",
+     "dev": "2xrq7swcyjrvsbp5wk4qivwbzrqxasxr-curl-8.18.0-dev",
+     "devdoc": "vrff2ib15qhdig8ich94visj28x9m931-curl-8.18.0-devdoc",
+     "man": "wd2w49jdql1n3c6cg4qimqbq5k6m6j4f-curl-8.18.0-man",
+     "out": "7bxrgix4f88r6xvidyl035vxdbn2rnyk-curl-8.18.0"
+    }
+   },
+   "libgit2": {
+    "key": "zTXg9w4PE5Zb32r+ZjY6Bj6z+kNfqVxQ+nYBLJQ7+Zs=",
+    "outputs": {
+     "dev": "cypyg1hrq68imywd91im9jg6wc7hmlwm-libgit2-1.9.2-dev",
+     "lib": "mlkymy0gw6fix5cdh1z1diyfn74g3k4m-libgit2-1.9.2-lib",
+     "out": "kqlmzi7fm3832cqhhm0j4irgqsnv4yg4-libgit2-1.9.2"
+    }
+   },
+   "openssl": {
+    "key": "zQq7/47PoUDmzP9C9S1exp/LINcCxbiQZrgwtFsb/fE=",
+    "outputs": {
+     "bin": "fvxzw0b4nzrf1rrg40cipn9r4ghdifvc-openssl-3.6.1-bin",
+     "dev": "a1m09nkw4zpqcjhdggiddb333b4z1v0l-openssl-3.6.1-dev",
+     "doc": "r8zh8frv16vn6582arji90vgk4rja637-openssl-3.6.1-doc",
+     "man": "rjw5rf70cvbaf7l7iv468x1m4hwa7qa2-openssl-3.6.1-man",
+     "out": "r3p3sm0hljbrznasz9wzxmpgn3brzh5x-openssl-3.6.1"
+    }
+   },
+   "pkg-config-unwrapped": {
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
+    "outputs": {
+     "doc": "xx1axay3mygb7rg536l9qnqvbhpxsllr-pkg-config-0.29.2-doc",
+     "man": "kxg8dji30ma9455v7l5j7lvqnb34r62b-pkg-config-0.29.2-man",
+     "out": "2m04b8p2qaw1pb25bwizdw54wjbii8yr-pkg-config-0.29.2"
+    }
+   },
+   "zstd": {
+    "key": "d2uJ6HgoBcOM9/Z29EOUpNOMXKWgV+WL9rmtaDQWBK0=",
+    "outputs": {
+     "bin": "4crx02pb0lv0x26yly1bnbf3n00cq38m-zstd-1.5.7-bin",
+     "dev": "i0hhsvlafn0zx3yl8yfcs714ps5qic00-zstd-1.5.7-dev",
+     "man": "c3g4ifcw3ad8kpa8yjs8lsac5hvmqzv0-zstd-1.5.7-man",
+     "out": "xq7dsd7b6x66fn1pqsif0pld0nw6rb33-zstd-1.5.7"
+    }
+   }
+  },
+  "aarch64-linux": {
+   "curl": {
+    "key": "C9N5WQUPeIbUqUamv3qq8s81Xjon9CmWM9j4dJPzzgw=",
+    "outputs": {
+     "bin": "asrq77x05br50nmmv7akp0ry2n1xxrb4-curl-8.18.0-bin",
+     "debug": "b4mmgwziiqa4jirsrw162r794zi48fz6-curl-8.18.0-debug",
+     "dev": "nxarksm7m9ll9p3r87issf0389hwdz3l-curl-8.18.0-dev",
+     "devdoc": "canqrd4xwygamx7qw3j7dd923l7bmg9n-curl-8.18.0-devdoc",
+     "man": "8z4wa6lizr4gzfpmj3928c2wjk1ldslf-curl-8.18.0-man",
+     "out": "qxkiwf9mg5x9jijpmk0hmz9nkd4xlzph-curl-8.18.0"
+    }
+   },
+   "libgit2": {
+    "key": "zTXg9w4PE5Zb32r+ZjY6Bj6z+kNfqVxQ+nYBLJQ7+Zs=",
+    "outputs": {
+     "dev": "gczbkvgain5psy1yvdzk2idlkfgn9bvg-libgit2-1.9.2-dev",
+     "lib": "r655flyk1dmvi136byaq76981p504rbj-libgit2-1.9.2-lib",
+     "out": "cngsgv3fn5z9kgz95w5md24q74grr5g6-libgit2-1.9.2"
+    }
+   },
+   "openssl": {
+    "key": "zQq7/47PoUDmzP9C9S1exp/LINcCxbiQZrgwtFsb/fE=",
+    "outputs": {
+     "bin": "anfxxkr88ry4wsfqm6in54p2a5radrs2-openssl-3.6.1-bin",
+     "debug": "2i7rbfcgk2ablcsivf6wsc20534bvspq-openssl-3.6.1-debug",
+     "dev": "ampimckfng4zil3amrhajfxhgxfr92wd-openssl-3.6.1-dev",
+     "doc": "07hchbxmk0f8a1kzm6g8ly4a49mgbhp8-openssl-3.6.1-doc",
+     "man": "n090313n6x2vi67ic4k5fnnmbvavcsc0-openssl-3.6.1-man",
+     "out": "v7kiykvis3nb7swg26v78m31vs63z8n1-openssl-3.6.1"
+    }
+   },
+   "pkg-config-unwrapped": {
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
+    "outputs": {
+     "doc": "5cx2jlhgyn2qqj73dkfpdj28348n1v2g-pkg-config-0.29.2-doc",
+     "man": "j3i9lipinwz45bp2fcv3mll31yj6bcra-pkg-config-0.29.2-man",
+     "out": "w9zj5k1a654rfslljnzv9fwpxrd7ii47-pkg-config-0.29.2"
+    }
+   },
+   "zstd": {
+    "key": "d2uJ6HgoBcOM9/Z29EOUpNOMXKWgV+WL9rmtaDQWBK0=",
+    "outputs": {
+     "bin": "4x4q96zrz8g7jzz9wm8z94riv7q3zw0j-zstd-1.5.7-bin",
+     "dev": "c9082kb2i992fi80ix6zi7sa6ijqqrzv-zstd-1.5.7-dev",
+     "man": "1xbh2v2pvphs8m06yrgzhrnrwpr0nsvl-zstd-1.5.7-man",
+     "out": "pilcyv83zm3h2gm1924xkfmib9n63b5r-zstd-1.5.7"
+    }
+   }
+  },
+  "x86_64-linux": {
+   "curl": {
+    "key": "C9N5WQUPeIbUqUamv3qq8s81Xjon9CmWM9j4dJPzzgw=",
+    "outputs": {
+     "bin": "6j3b51rypymg5inhr27rcc7in5cxbvjz-curl-8.18.0-bin",
+     "debug": "9gvh3ymdh38n7lkbjd61cwx6ff510wpb-curl-8.18.0-debug",
+     "dev": "m2b7j4s1jlhlnpxhpf2sjwvd2nn0x8hx-curl-8.18.0-dev",
+     "devdoc": "r2xswgdxf2z7h9vnirhzkzj4k721nbhh-curl-8.18.0-devdoc",
+     "man": "gxspg74jdwaxdb80giixl4517nw6q139-curl-8.18.0-man",
+     "out": "dhdysbgmgqp936mvkf5f9s8fh2mk68k5-curl-8.18.0"
+    }
+   },
+   "libgit2": {
+    "key": "zTXg9w4PE5Zb32r+ZjY6Bj6z+kNfqVxQ+nYBLJQ7+Zs=",
+    "outputs": {
+     "dev": "wmwyb8lxhc5llfhwiw13i4bba7xl9317-libgit2-1.9.2-dev",
+     "lib": "yiz1z8vp39jbpv6cq656rpy73mcc8rdf-libgit2-1.9.2-lib",
+     "out": "gvxsk0dhpzcz11d08m1zl0x43lbryvfc-libgit2-1.9.2"
+    }
+   },
+   "openssl": {
+    "key": "zQq7/47PoUDmzP9C9S1exp/LINcCxbiQZrgwtFsb/fE=",
+    "outputs": {
+     "bin": "8q9wrmngl1mhvqgg0l018339zz86m184-openssl-3.6.1-bin",
+     "debug": "4bsbm214ybdhfg886j1nhyqhig1jqr71-openssl-3.6.1-debug",
+     "dev": "79xszwqidf98ag703b5c82q3pwg9lyzq-openssl-3.6.1-dev",
+     "doc": "y4pjymdjj68hnbffxr2niafwjy2ngy7s-openssl-3.6.1-doc",
+     "man": "dcwdxd2av5wj077jpj0zk5c4hddc9s44-openssl-3.6.1-man",
+     "out": "bga5xf95jaypy385hvxm4h3yxl3m1566-openssl-3.6.1"
+    }
+   },
+   "pkg-config-unwrapped": {
+    "key": "txA5f9ZYEuOdsMbzPn47WlK/b4SRonS4HJGkN3F+Sm8=",
+    "outputs": {
+     "doc": "iaz79fl1m32cn5l41nb1kqqdssjk1nyw-pkg-config-0.29.2-doc",
+     "man": "r041i8ih6kzi5p0winmlb8kvs16igm2r-pkg-config-0.29.2-man",
+     "out": "wi6s912rwkb9afcw154i6ijzwpgw3p3f-pkg-config-0.29.2"
+    }
+   },
+   "zstd": {
+    "key": "d2uJ6HgoBcOM9/Z29EOUpNOMXKWgV+WL9rmtaDQWBK0=",
+    "outputs": {
+     "bin": "8cc8cdqa54bahfi5n5glkm8d252zkkjn-zstd-1.5.7-bin",
+     "dev": "q4v09bffjy5i0f2kdwnbbwmhqv6i3pjs-zstd-1.5.7-dev",
+     "man": "bhms1y19818704k4aljz6mb8prjbxd1y-zstd-1.5.7-man",
+     "out": "29mmnqpc1p3iv8wj0lpvicajy3jsbx87-zstd-1.5.7"
+    }
+   }
+  }
+ }
+}

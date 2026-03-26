@@ -1,0 +1,10 @@
+[package]
+name = "library"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dev-dependencies]
+curl = "0.4.49"
+git2 = "0.20.4"
+zstd = "0.13.3"

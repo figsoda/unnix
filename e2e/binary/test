@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+for bin in deno jq poetry rg; do
+    command -v "$bin" | grep ^/nix/store/
+done
+
+deno eval 'for await (const e of Deno.readDir(".")) console.log(e.name)' | rg Cargo.toml
+jq .nodes.nixpkgs flake.lock | rg github
+poetry python list | rg Version

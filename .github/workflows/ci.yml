@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
@@ -18,7 +18,10 @@ jobs:
           - target: aarch64-unknown-linux-musl
             runner: ubuntu-24.04-arm
           - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
+            runner: ubuntu-latest
+
+    outputs:
+      directories: ${{ steps.matrix.outputs.directories }}
 
     steps:
       - name: Checkout
@@ -33,7 +36,53 @@ jobs:
       - name: Cargo build
         run: |
           rustup toolchain install stable --profile minimal -t ${{ matrix.target }}
-          cargo +stable build --target ${{ matrix.target }}
+          cargo +stable build --release --target ${{ matrix.target }}
+
+      - name: Create e2e matrix
+        id: matrix
+        run: |
+          directories=$(find e2e -mindepth 1 -maxdepth 1 -print0 -type d |
+            jq -Rc 'split("\u0000") | map(select(length > 0))')
+          echo "directories=$directories" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: unnix-${{ runner.arch }}-${{ runner.os }}
+          path: target/${{ matrix.target }}/release/unnix
+
+  e2e-action:
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        directory: ${{ fromJSON(needs.build.outputs.directories) }}
+        runner:
+          - macos-latest
+          - ubuntu-24.04-arm
+          - ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download unnix
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: unnix-${{ runner.arch }}-${{ runner.os }}
+
+      - name: Install unnix
+        run: |
+          chmod +x unnix
+          mv unnix /usr/local/bin
+
+      - name: Set up unnix
+        uses: figsoda/unnix-action@v0.1.0-alpha.2
+        with:
+          directory: ${{ matrix.directory }}
+
+      - name: Test
+        run: ${{ matrix.directory }}/test
 
   nix:
     name: nix
