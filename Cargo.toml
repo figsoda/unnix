@@ -12,6 +12,7 @@ keywords = ["ci", "cli", "hydra", "nix"]
 categories = ["command-line-utilities"]
 
 [dependencies]
+# keep-sorted start
 async-stream = "0.3.6"
 blake3 = "1.8.3"
 camino = "1.2.2"
@@ -43,6 +44,7 @@ tracing = "0.1.44"
 tracing-indicatif = "0.3.14"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 url = "2.5.8"
+# keep-sorted end
 
 [dependencies.async-compression]
 version = "0.4.41"
