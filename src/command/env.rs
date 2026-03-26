@@ -12,7 +12,7 @@ pub async fn env(global: GlobalArgs, args: EnvArgs) -> Result<()> {
     let state = State::new_locked(global, args.system.try_into()?).await?;
 
     let mut cmd = if cfg!(target_os = "linux") {
-        let mut cmd = state.bwrap();
+        let mut cmd = state.bwrap()?;
         if let Some(args) = args.command {
             cmd.args(args);
         } else if let Some(shell) = var_os("SHELL") {

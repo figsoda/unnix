@@ -238,11 +238,15 @@ impl State {
         Ok(env)
     }
 
-    pub fn bwrap(&self) -> Command {
+    pub fn bwrap(&self) -> Result<Command> {
         let mut cmd = Command::new("bwrap");
+        for entry in Utf8Path::new("/").read_dir().into_diagnostic()? {
+            let path = entry.into_diagnostic()?.path();
+            cmd.arg("--bind").arg(&path).arg(&path);
+        }
 
-        cmd.arg("--bind").arg("/").arg("/");
         cmd.arg("--dev-bind").arg("/dev").arg("/dev");
+        cmd.arg("--proc").arg("/proc");
 
         if Utf8Path::new("/nix/store").is_dir() {
             cmd.arg("--overlay-src").arg("/nix/store");
@@ -253,7 +257,7 @@ impl State {
         }
 
         cmd.arg("--");
-        cmd
+        Ok(cmd)
     }
 
     async fn lock(&mut self) -> Result<()> {
