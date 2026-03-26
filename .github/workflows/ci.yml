@@ -6,27 +6,30 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
 jobs:
   build:
     name: build
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
           - target: aarch64-apple-darwin
-            os: macos-latest
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04-arm
+            runner: macos-latest
           - target: aarch64-unknown-linux-musl
-            os: ubuntu-24.04-arm
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            runner: ubuntu-24.04-arm
           - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
+            runner: ubuntu-latest
+
+    outputs:
+      directories: ${{ steps.matrix.outputs.directories }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install dependencies (musl)
         if: contains(matrix.target, 'musl')
@@ -37,7 +40,91 @@ jobs:
       - name: Cargo build
         run: |
           rustup toolchain install stable --profile minimal -t ${{ matrix.target }}
-          cargo +stable build --target ${{ matrix.target }}
+          cargo +stable build --release --target ${{ matrix.target }}
+
+      - name: Create e2e matrix
+        id: matrix
+        run: |
+          directories=$(find e2e -mindepth 1 -maxdepth 1 -print0 -type d |
+            jq -Rc 'split("\u0000") | map(select(length > 0))')
+          echo "directories=$directories" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: unnix-${{ runner.arch }}-${{ runner.os }}
+          path: target/${{ matrix.target }}/release/unnix
+
+  e2e-action:
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        directory: ${{ fromJSON(needs.build.outputs.directories) }}
+        runner:
+          - macos-latest
+          - ubuntu-24.04-arm
+          - ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Download unnix
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: unnix-${{ runner.arch }}-${{ runner.os }}
+
+      - name: Install unnix
+        run: |
+          chmod +x unnix
+          mv unnix /usr/local/bin
+
+      - name: Set up unnix
+        uses: figsoda/unnix-action@3c9d03daea8d0569685b38576fb4692f6900bb5e # v0.1.0-alpha.2
+        with:
+          directory: ${{ matrix.directory }}
+
+      - name: Test
+        run: |
+          "$MATRIX_DIRECTORY/test"
+        env:
+          MATRIX_DIRECTORY: ${{ matrix.directory }}
+
+  e2e-cli:
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-24.04-arm
+          - ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Download unnix
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: unnix-${{ runner.arch }}-${{ runner.os }}
+
+      - name: Install unnix
+        run: |
+          sudo apt update
+          sudo apt install bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          chmod +x unnix
+          mv unnix /usr/local/bin
+
+      - name: Test
+        run: |
+          find e2e -mindepth 1 -maxdepth 1 -print0 -type d |
+            xargs -0I{} unnix env --locked -d {} {}/test
 
   nix:
     name: nix
@@ -54,30 +141,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@51f3067b56fe8ae331890c77d4e454f6d60615ff # v31.10.2
 
       - name: Set up cachix
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
         with:
           name: unnix
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Nix flake check
         run: nix flake check --system ${{ matrix.system }}
-
-  clippy-rustfmt:
-    name: clippy-rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: "Cargo: clippy, fmt"
-        run: |
-          rustup toolchain install stable --profile minimal -c clippy
-          rustup toolchain install nightly --profile minimal -c rustfmt
-          cargo +stable clippy -- -D warnings
-          cargo +nightly fmt -- --check

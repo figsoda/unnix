@@ -13,33 +13,31 @@ jobs:
       contents: write
     steps:
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           body: "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/main/CHANGELOG.md)"
 
   release:
     name: release
     needs: create_release
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
     strategy:
       matrix:
         include:
           - target: aarch64-apple-darwin
-            os: macos-latest
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04-arm
+            runner: macos-latest
           - target: aarch64-unknown-linux-musl
-            os: ubuntu-24.04-arm
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            runner: ubuntu-24.04-arm
           - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
+            runner: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install dependencies (musl)
         if: contains(matrix.target, 'musl')
@@ -55,7 +53,7 @@ jobs:
           RUSTFLAGS: -C strip=symbols
 
       - name: Upload asset
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # latest
         with:
           tag: ${{ github.ref }}
           file: target/${{ matrix.target }}/release/unnix
@@ -70,7 +68,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Cargo build
         run: |
@@ -89,7 +89,7 @@ jobs:
             --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime
 
       - name: Upload artifacts
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # latest
         with:
           tag: ${{ github.ref }}
           file: artifacts.tar.xz

@@ -1,0 +1,98 @@
+{
+ "version": 0,
+ "systems": {
+  "aarch64-darwin": {
+   "deno": {
+    "key": "bZQ+5k2FZ9K0qNl1k3FRgEuRGxfvPStv70R63dthglA=",
+    "outputs": {
+     "out": "pnr3gcm74hx4g2ql4f3js8lbpa5a0dkr-deno-2.6.10"
+    }
+   },
+   "jq": {
+    "key": "5XQAcOo6+5vRAYOHe9O6SuNkaODvK3SoTRsk6vjjPiI=",
+    "outputs": {
+     "bin": "bb450vb2gl547zwba8sihcyilsg2rqfa-jq-1.8.1-bin",
+     "dev": "irxgyhi0rq34f2y721a26ii09nynq2ha-jq-1.8.1-dev",
+     "doc": "rnkk37licxmcicz44sm368bk2fsrk52j-jq-1.8.1-doc",
+     "man": "vs96fwfhd5gjycxs5yc58wkrizscww92-jq-1.8.1-man",
+     "out": "y4gq3lbz2nq75cl3v28ixrqrr90pk4lf-jq-1.8.1"
+    }
+   },
+   "poetry": {
+    "key": "EkPhVMVdlPSs7G3HQNOPmcjsF2dZX1HEQV0XiglTXt4=",
+    "outputs": {
+     "dist": "7fv1wy17a2n1pi1dbwf6c4mf61jpwf2k-python3.13-poetry-2.3.2-dist",
+     "out": "hyxn6g1jj0azq309hlvwhh2hmlzcsc06-python3.13-poetry-2.3.2"
+    }
+   },
+   "ripgrep": {
+    "key": "R6F22o4dZbUf/VO9vUOl6Ewc0W+ZhtVBJRYKVieSZY4=",
+    "outputs": {
+     "out": "qx2i265ck9hi773q0hhg96bjchkghpgm-ripgrep-15.1.0"
+    }
+   }
+  },
+  "aarch64-linux": {
+   "deno": {
+    "key": "bZQ+5k2FZ9K0qNl1k3FRgEuRGxfvPStv70R63dthglA=",
+    "outputs": {
+     "out": "6jh8a1lxzbbgdqv2cyiqq9acrjgh03l1-deno-2.6.10"
+    }
+   },
+   "jq": {
+    "key": "5XQAcOo6+5vRAYOHe9O6SuNkaODvK3SoTRsk6vjjPiI=",
+    "outputs": {
+     "bin": "h68aklwk28xbrg7pqaw078w1hvvvf419-jq-1.8.1-bin",
+     "dev": "kzsszlf69lndqilpgysw1j9b4hrfwjfx-jq-1.8.1-dev",
+     "doc": "rr0a4brsd47393640zn9zgw844rbkrsl-jq-1.8.1-doc",
+     "man": "l4npc0sgk51lz2d6jqnl4r18hmn6qckr-jq-1.8.1-man",
+     "out": "5jf55qkwrnd769ri9wxiy7z9kp5zb4ca-jq-1.8.1"
+    }
+   },
+   "poetry": {
+    "key": "EkPhVMVdlPSs7G3HQNOPmcjsF2dZX1HEQV0XiglTXt4=",
+    "outputs": {
+     "dist": "ahi8br2qw858xzp7wplwradqw5gifi6g-python3.13-poetry-2.3.2-dist",
+     "out": "d0s22rsbjkb1mkxgrlhdbji76sq48jd1-python3.13-poetry-2.3.2"
+    }
+   },
+   "ripgrep": {
+    "key": "R6F22o4dZbUf/VO9vUOl6Ewc0W+ZhtVBJRYKVieSZY4=",
+    "outputs": {
+     "out": "p16w1972rd9hj2kdczmdlwv0wa8c0drf-ripgrep-15.1.0"
+    }
+   }
+  },
+  "x86_64-linux": {
+   "deno": {
+    "key": "bZQ+5k2FZ9K0qNl1k3FRgEuRGxfvPStv70R63dthglA=",
+    "outputs": {
+     "out": "iyy2zi9fw14fiwvs52pvg2immqbpvvfw-deno-2.6.10"
+    }
+   },
+   "jq": {
+    "key": "5XQAcOo6+5vRAYOHe9O6SuNkaODvK3SoTRsk6vjjPiI=",
+    "outputs": {
+     "bin": "fc13hvlj7541i1xmwdka7f61qicdzr5a-jq-1.8.1-bin",
+     "dev": "plinh1rzkh83n4gfpkxl748zgaydpxll-jq-1.8.1-dev",
+     "doc": "ihgrvb9w91mwbhxx3fi3gcwwx3qlsdfv-jq-1.8.1-doc",
+     "man": "crwv17pim6csnfr4jmsd7kf60sp3c5dh-jq-1.8.1-man",
+     "out": "s4w1j16dj8wyriv1ljfypr9s1r39yjwp-jq-1.8.1"
+    }
+   },
+   "poetry": {
+    "key": "EkPhVMVdlPSs7G3HQNOPmcjsF2dZX1HEQV0XiglTXt4=",
+    "outputs": {
+     "dist": "4yjh86yx1p192mdyqfc5wajpqr6f9ykr-python3.13-poetry-2.3.2-dist",
+     "out": "vh04jbxny63zx8jgnv9w7iqlynnq5l8k-python3.13-poetry-2.3.2"
+    }
+   },
+   "ripgrep": {
+    "key": "R6F22o4dZbUf/VO9vUOl6Ewc0W+ZhtVBJRYKVieSZY4=",
+    "outputs": {
+     "out": "922crn2k3v8yaqk7anps80hba919lnds-ripgrep-15.1.0"
+    }
+   }
+  }
+ }
+}

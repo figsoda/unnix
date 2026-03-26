@@ -1,0 +1,7 @@
+packages {
+  curl
+  libgit2
+  openssl
+  pkg-config-unwrapped
+  zstd
+}

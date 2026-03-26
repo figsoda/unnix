@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export LIBGIT2_NO_VENDOR=1
+export OPENSSL_NO_VENDOR=1
+export ZSTD_SYS_USE_PKG_CONFIG=1
+
+command -v pkg-config | grep ^/nix/store/
+for lib in libcurl libgit2 libzstd; do
+    pkg-config --libs "$lib" | grep /nix/store/
+done
+
+dir=$(dirname "$0")
+cargo test --manifest-path "$dir/Cargo.toml"

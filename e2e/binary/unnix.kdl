@@ -1,0 +1,6 @@
+packages {
+  deno
+  jq
+  poetry
+  ripgrep
+}

@@ -1,9 +1,9 @@
 use std::{env::var_os, pin::pin};
 
 use miette::{IntoDiagnostic, Result, WrapErr, bail};
-use shell_escape::escape;
 use tokio::{fs::File, io::AsyncWriteExt, join, try_join};
 use tokio_stream::StreamExt;
+use uuid::Uuid;
 
 use crate::{
     cli::{CiArgs, CiCommand, GlobalArgs},
@@ -39,8 +39,9 @@ async fn github(state: State) -> Result<()> {
             state.extra_env(&paths, manifest),
         )?;
 
+        let uuid = Uuid::new_v4().simple().to_string();
         for (name, value) in env {
-            let env = format!("{name}={}\n", escape(value.into()));
+            let env = format!("{name}<<{uuid}\n{value}\n{uuid}\n");
             github_env
                 .write_all(env.as_bytes())
                 .await
