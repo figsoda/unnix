@@ -209,19 +209,21 @@ impl State {
         paths: &[StorePath],
         manifest: &'a SystemManifest,
     ) -> Result<BTreeMap<&'a str, String>> {
-        let (ld_library_path, library_path, pkg_config_path) = try_join!(
+        let (ld_library_path, library_path, pkg_config_path, pythonpath) = try_join!(
             self.store
                 .prefix_env_subpaths("LD_LIBRARY_PATH", ":", paths, "lib"),
             self.store
                 .prefix_env_subpaths("LIBRARY_PATH", ":", paths, "lib"),
             self.store
-                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", paths, "lib/pkgconfig")
+                .prefix_env_subpaths("PKG_CONFIG_PATH", ":", paths, "lib/pkgconfig"),
+            self.store.prefix_python_subpaths(paths),
         )?;
 
         let mut env = BTreeMap::from([
             ("LD_LIBRARY_PATH", ld_library_path),
             ("LIBRARY_PATH", library_path),
             ("PKG_CONFIG_PATH", pkg_config_path),
+            ("PYTHONPATH", pythonpath),
         ]);
 
         let mut pkgs = HashMap::new();

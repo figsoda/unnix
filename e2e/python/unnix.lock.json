@@ -1,0 +1,73 @@
+{
+ "version": 0,
+ "systems": {
+  "aarch64-darwin": {
+   "numpy": {
+    "key": "AFwPeJ6wkr0VMVsuvwSqsmFrUb2WK4FiEFGyYJ0kQXs=",
+    "outputs": {
+     "dist": "s942kwyl8914yx3azay9297wag3v22s7-python3.14-numpy-2.4.2-dist",
+     "out": "z12byb05psp2ixc45ybrf2pifji2zsc3-python3.14-numpy-2.4.2"
+    }
+   },
+   "python": {
+    "key": "Z0eQD5PcEKl2iwGizX00TKJEKWr0cuU8O1ertyzaHXQ=",
+    "outputs": {
+     "out": "dfkim8vahgdqhk1lrxz1j4mcighlrk99-python3-3.14.3"
+    }
+   },
+   "scipy": {
+    "key": "ivGDOfB06m5kHwFtQxWrcUNghkKXdoT4ie2iGzMre0E=",
+    "outputs": {
+     "dist": "syhf50l6xbpvyrps83gnaddavy8d3wiy-python3.14-scipy-1.17.1-dist",
+     "out": "q9gk086dijx59hzf541a0369xk5m5lvb-python3.14-scipy-1.17.1"
+    }
+   }
+  },
+  "aarch64-linux": {
+   "numpy": {
+    "key": "AFwPeJ6wkr0VMVsuvwSqsmFrUb2WK4FiEFGyYJ0kQXs=",
+    "outputs": {
+     "dist": "6ffb4zkgxiq9p3l31wyq4p1syz5pi1k1-python3.14-numpy-2.4.2-dist",
+     "out": "9bjcjsay0xhnsdawa4w916cz2igiswy6-python3.14-numpy-2.4.2"
+    }
+   },
+   "python": {
+    "key": "Z0eQD5PcEKl2iwGizX00TKJEKWr0cuU8O1ertyzaHXQ=",
+    "outputs": {
+     "debug": "q82pzlagc8igcmi0gd9d15nbyh75450g-python3-3.14.3-debug",
+     "out": "s33vdxkahhrdbyrqyw8yn71kzr44l6a0-python3-3.14.3"
+    }
+   },
+   "scipy": {
+    "key": "ivGDOfB06m5kHwFtQxWrcUNghkKXdoT4ie2iGzMre0E=",
+    "outputs": {
+     "dist": "hnixxiwf7zwybn1i9zv9ca64sfdcz5ay-python3.14-scipy-1.17.1-dist",
+     "out": "5m1apd2pvb1h82ra61y2vj918ygbddhw-python3.14-scipy-1.17.1"
+    }
+   }
+  },
+  "x86_64-linux": {
+   "numpy": {
+    "key": "AFwPeJ6wkr0VMVsuvwSqsmFrUb2WK4FiEFGyYJ0kQXs=",
+    "outputs": {
+     "dist": "haglg1g4igkzdvdx6x48xldh860fariy-python3.14-numpy-2.4.2-dist",
+     "out": "x11f1y1m99220h6dd58sbfc6pf2izn5r-python3.14-numpy-2.4.2"
+    }
+   },
+   "python": {
+    "key": "Z0eQD5PcEKl2iwGizX00TKJEKWr0cuU8O1ertyzaHXQ=",
+    "outputs": {
+     "debug": "c3piq5blycxhicidsmfc0nih01r0svxq-python3-3.14.3-debug",
+     "out": "qr0wqh2damb6asnyz4jkx61id5yg3qh2-python3-3.14.3"
+    }
+   },
+   "scipy": {
+    "key": "ivGDOfB06m5kHwFtQxWrcUNghkKXdoT4ie2iGzMre0E=",
+    "outputs": {
+     "dist": "ix2h44b0kdpqia41mws7k8mlncvvc5z9-python3.14-scipy-1.17.1-dist",
+     "out": "xxswsw9nn7v8j2ib1z1vlkazsil8gip1-python3.14-scipy-1.17.1"
+    }
+   }
+  }
+ }
+}

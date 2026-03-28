@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+import sys
+
+import numpy as np
+import scipy
+
+assert sys.executable.startswith("/nix/store/")
+
+assert len(np.__path__) > 0
+assert all((path.startswith("/nix/store/") for path in np.__path__))
+
+assert len(scipy.__path__) > 0
+assert all((path.startswith("/nix/store/") for path in scipy.__path__))
+
+matrix = np.array([[1, 2], [3, 4]])
+inverse = np.array([[-2, 1], [3 / 2, -1 / 2]])
+assert np.allclose(scipy.linalg.inv(matrix), inverse)
