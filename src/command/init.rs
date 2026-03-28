@@ -4,7 +4,7 @@ use std::{
 };
 
 use kdl::{FormatConfig, KdlDocument, KdlNode};
-use miette::{IntoDiagnostic, Result};
+use miette::{IntoDiagnostic, Result, WrapErr};
 
 use crate::{
     cli::{GlobalArgs, InitArgs},
@@ -13,13 +13,18 @@ use crate::{
 
 pub async fn init(global: GlobalArgs, args: InitArgs) -> Result<()> {
     let dir = if let Some(dir) = global.directory {
-        create_dir_all(&dir).into_diagnostic()?;
+        create_dir_all(&dir)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {dir}"))?;
         dir
     } else {
         ".".into()
     };
 
-    let mut file = File::create_new(dir.join("unnix.kdl")).into_diagnostic()?;
+    let path = dir.join("unnix.kdl");
+    let mut file = File::create_new(&path)
+        .into_diagnostic()
+        .wrap_err_with(|| format!("failed to create {path}"))?;
     let fmt = FormatConfig::builder().indent("  ").build();
 
     if !args.systems.is_empty() {

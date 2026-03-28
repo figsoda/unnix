@@ -8,7 +8,7 @@ use std::{
 use camino::Utf8Path;
 use dashmap::DashMap;
 use itertools::Itertools;
-use miette::{Diagnostic, IntoDiagnostic, NamedSource, Report, Result, SourceOffset};
+use miette::{Diagnostic, IntoDiagnostic, NamedSource, Report, Result, SourceOffset, WrapErr};
 use monostate::MustBe;
 use serde::{Deserialize, Serialize, Serializer, ser::SerializeMap};
 use serde_json::ser::PrettyFormatter;
@@ -78,11 +78,16 @@ impl Lockfile {
     }
 
     pub fn write_dir(&self, path: &Utf8Path) -> Result<()> {
-        let mut file = File::create(path.join("unnix.lock.json")).into_diagnostic()?;
+        let path = path.join("unnix.lock.json");
+        let mut file = File::create(&path)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {path}"))?;
+
         let formatter = PrettyFormatter::with_indent(b" ");
         let mut ser = serde_json::Serializer::with_formatter(&mut file, formatter);
         self.serialize(&mut ser).into_diagnostic()?;
         writeln!(file).into_diagnostic()?;
+
         Ok(())
     }
 

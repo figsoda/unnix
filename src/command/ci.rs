@@ -29,12 +29,19 @@ async fn github(state: State) -> Result<()> {
     let write_env = async {
         let (mut github_env, env) = try_join!(
             async {
+                let github_env = var_os("GITHUB_ENV").wrap_err("$GITHUB_ENV is unset")?;
                 File::options()
                     .append(true)
                     .create(true)
-                    .open(var_os("GITHUB_ENV").wrap_err("$GITHUB_ENV is unset")?)
+                    .open(&github_env)
                     .await
                     .into_diagnostic()
+                    .wrap_err_with(|| {
+                        format!(
+                            "failed to open {} ($GITHUB_ENV)",
+                            github_env.to_string_lossy(),
+                        )
+                    })
             },
             state.extra_env(&paths, manifest),
         )?;
@@ -54,12 +61,19 @@ async fn github(state: State) -> Result<()> {
     let write_path = async {
         let (github_path, paths) = join!(
             async {
+                let github_path = var_os("GITHUB_PATH").wrap_err("$GITHUB_PATH is unset")?;
                 File::options()
                     .append(true)
                     .create(true)
-                    .open(var_os("GITHUB_PATH").wrap_err("$GITHUB_PATH is unset")?)
+                    .open(&github_path)
                     .await
                     .into_diagnostic()
+                    .wrap_err_with(|| {
+                        format!(
+                            "failed to open {} ($GITHUB_PATH)",
+                            github_path.to_string_lossy(),
+                        )
+                    })
             },
             state.store.subpaths(&paths, "bin").collect::<Vec<_>>(),
         );

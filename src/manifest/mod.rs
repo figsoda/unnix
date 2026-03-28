@@ -153,7 +153,9 @@ macro_rules! kdl_macros {
 impl Manifest {
     pub fn from_dir(path: &Utf8Path) -> Result<Self> {
         let path = path.join("unnix.kdl");
-        let text = read_to_string(&path).into_diagnostic()?;
+        let text = read_to_string(&path)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to open {path}"))?;
         Self::parse(&text)
     }
 

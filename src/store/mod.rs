@@ -20,7 +20,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use dirs::cache_dir;
 use fs4::tokio::AsyncFileExt;
 use harmonia_utils_hash::{Hash, fmt::CommonHash};
-use miette::{IntoDiagnostic, Result, bail, miette};
+use miette::{IntoDiagnostic, Result, WrapErr, bail, miette};
 use nix_nar::Decoder;
 use tempfile::{NamedTempFile, TempDir};
 use tokio::{
@@ -51,9 +51,15 @@ impl Store {
         let lock = cache.join("lock");
         let references = cache.join("references");
 
-        create_dir_all(&path).into_diagnostic()?;
-        create_dir_all(&lock).into_diagnostic()?;
-        create_dir_all(&references).into_diagnostic()?;
+        create_dir_all(&path)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {path}"))?;
+        create_dir_all(&lock)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {lock}"))?;
+        create_dir_all(&references)
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {references}"))?;
 
         Ok(Store {
             path,
@@ -63,7 +69,11 @@ impl Store {
     }
 
     pub async fn lock_path(&self, path: &StorePath) -> Result<File> {
-        let lock = File::create(self.lock.join(path)).await.into_diagnostic()?;
+        let path = self.lock.join(path);
+        let lock = File::create(&path)
+            .await
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to create {path}"))?;
         while !lock.try_lock_exclusive().into_diagnostic()? {
             sleep(Duration::from_millis(250)).await;
         }
