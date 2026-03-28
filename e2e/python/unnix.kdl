@@ -1,0 +1,12 @@
+packages {
+  numpy
+  python
+  scipy
+}
+
+hydra default {
+  base "https://hydra.nixos.org"
+  project nixpkgs
+  jobset unstable
+  job "python314Packages.{package}.{system}"
+}

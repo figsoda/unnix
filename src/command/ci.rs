@@ -1,4 +1,4 @@
-use std::{env::var_os, pin::pin};
+use std::env::var_os;
 
 use miette::{IntoDiagnostic, Result, WrapErr, bail};
 use tokio::{fs::File, io::AsyncWriteExt, join, try_join};
@@ -61,12 +61,11 @@ async fn github(state: State) -> Result<()> {
                     .await
                     .into_diagnostic()
             },
-            state.store.subpaths(&paths, "bin"),
+            state.store.subpaths(&paths, "bin").collect::<Vec<_>>(),
         );
 
         let mut github_path = github_path?;
-        let mut paths = pin!(paths);
-        while let Some(path) = paths.next().await {
+        for path in paths {
             github_path
                 .write_all(format!("{path}\n").as_bytes())
                 .await

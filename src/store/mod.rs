@@ -24,7 +24,7 @@ use miette::{IntoDiagnostic, Result, bail, miette};
 use nix_nar::Decoder;
 use tempfile::{NamedTempFile, TempDir};
 use tokio::{
-    fs::{File, rename, symlink_metadata},
+    fs::{File, read_dir, rename, symlink_metadata},
     io::{AsyncBufRead, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     task::{JoinSet, LocalSet, spawn_blocking},
     time::sleep,
@@ -251,8 +251,40 @@ impl Store {
         paths: &[StorePath],
         subpath: &str,
     ) -> Result<String> {
+        let paths = self.subpaths(paths, subpath);
+        self.prefix_env(name, sep, paths).await
+    }
+
+    pub async fn prefix_python_subpaths(&self, paths: &[StorePath]) -> Result<String> {
+        let paths = stream!({
+            for path in paths {
+                let path = path.as_ref().join("lib");
+                let Ok(mut entries) = read_dir(self.path.join(&path)).await else {
+                    continue;
+                };
+
+                while let Ok(Some(entry)) = entries.next_entry().await {
+                    let Ok(name) = entry.file_name().into_string() else {
+                        continue;
+                    };
+                    let path = path.join(name).join("site-packages");
+                    if symlink_metadata(self.path.join(&path)).await.is_ok() {
+                        yield Utf8Path::new("/nix/store").join(&path);
+                    }
+                }
+            }
+        });
+        self.prefix_env("PYTHONPATH", ":", paths).await
+    }
+
+    async fn prefix_env(
+        &self,
+        name: &str,
+        sep: &str,
+        paths: impl Stream<Item = Utf8PathBuf>,
+    ) -> Result<String> {
         let mut val = String::new();
-        let mut paths = pin!(self.subpaths(paths, subpath).await);
+        let mut paths = pin!(paths);
         if let Some(path) = paths.next().await {
             val.push_str(path.as_str());
             while let Some(path) = paths.next().await {
@@ -277,7 +309,7 @@ impl Store {
         }
     }
 
-    pub async fn subpaths<'a>(
+    pub fn subpaths<'a>(
         &'a self,
         paths: &'a [StorePath],
         subpath: &'a str,
