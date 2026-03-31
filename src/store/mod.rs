@@ -380,6 +380,16 @@ mod tests {
 
         let env = store
             .prefix_env(
+                Ok("".into()),
+                ";",
+                tokio_stream::iter(["lorem".into(), "ipsum".into()]),
+            )
+            .await
+            .unwrap();
+        assert_eq!(env, Some("lorem;ipsum".into()));
+
+        let env = store
+            .prefix_env(
                 Ok("lorem".into()),
                 ",",
                 tokio_stream::iter(["ipsum".into(), "dolor".into()]),
