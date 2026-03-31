@@ -41,7 +41,7 @@ rustPlatform.buildRustPackage {
   };
 
   postInstall = ''
-    installManPage artifacts/unnix.1
+    installManPage artifacts/*.1
     installShellCompletion artifacts/unnix.{bash,fish} --zsh artifacts/_unnix
   '';
 }
