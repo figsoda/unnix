@@ -35,7 +35,7 @@ flowchart TB
 nix(nix) --> |&nbsp;download&nbsp;| expr --> |&nbsp;evaluate&nbsp;| drv
 drv --> |&nbsp;outputs&nbsp;| path --> |&nbsp;query&nbsp;| cache
 
-cache -->|&nbsp;hit&nbsp;| download(download to the nix store)
+cache -->|&nbsp;hit&nbsp;| download(download to the Nix store)
 cache -->|&nbsp;miss&nbsp;| build(build the derivation)
 drv -.- build
 
@@ -47,14 +47,14 @@ cache(
 drv(derivations)
 
 expr(
-  nix expressions
-  e.g. nixpkgs
+  Nix expressions
+  e.g. Nixpkgs
 )
 
 path(store paths)
 ```
 
-Downloading and evaluating nixpkgs can take a long time,
+Downloading and evaluating Nixpkgs can take a long time,
 especially in ephemeral environments like CI pipelines.
 Unnix avoids that by removing derivations from the picture altogether,
 and getting the store paths directly from CI systems like [hydra].
