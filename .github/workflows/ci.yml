@@ -120,20 +120,23 @@ jobs:
         uses: cachix/install-nix-action@51f3067b56fe8ae331890c77d4e454f6d60615ff # v31.10.2
         if: matrix.with-nix
 
-      - name: Populate the Nix store
+      # support for overlay mounts was added in bubblewrap 0.11.0
+      # which is not available in Ubuntu 24.04
+      - name: Install bubblewrap
         if: matrix.with-nix
         run: |
-          nix run nixpkgs#ripgrep -- --version
+          nix profile add nixpkgs#bubblewrap
           test -e /nix/store
 
-      - name: Make sure the Nix store does not exist
+      - name: Install bubblewrap
         if: "!matrix.with-nix"
-        run: test ! -e /nix/store
-
-      - name: Install unnix
         run: |
           sudo apt update
           sudo apt install bubblewrap
+          test ! -e /nix/store
+
+      - name: Install unnix
+        run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           chmod +x unnix
           mv unnix /usr/local/bin
