@@ -260,12 +260,12 @@ impl Store {
         sep: &str,
         paths: &[StorePath],
         subpath: &str,
-    ) -> Result<String> {
+    ) -> Result<Option<String>> {
         let paths = self.subpaths(paths, subpath);
-        self.prefix_env(name, sep, paths).await
+        self.prefix_env(var(name), sep, paths).await
     }
 
-    pub async fn prefix_python_subpaths(&self, paths: &[StorePath]) -> Result<String> {
+    pub async fn prefix_python_subpaths(&self, paths: &[StorePath]) -> Result<Option<String>> {
         let paths = stream!({
             for path in paths {
                 let path = path.as_ref().join("lib");
@@ -284,35 +284,36 @@ impl Store {
                 }
             }
         });
-        self.prefix_env("PYTHONPATH", ":", paths).await
+        self.prefix_env(var("PYTHONPATH"), ":", paths).await
     }
 
     async fn prefix_env(
         &self,
-        name: &str,
+        env: Result<String, VarError>,
         sep: &str,
         paths: impl Stream<Item = Utf8PathBuf>,
-    ) -> Result<String> {
-        let mut val = String::new();
+    ) -> Result<Option<String>> {
         let mut paths = pin!(paths);
-        if let Some(path) = paths.next().await {
-            val.push_str(path.as_str());
+        let mut val = if let Some(path) = paths.next().await {
+            let mut val = path.into_string();
             while let Some(path) = paths.next().await {
                 val.push_str(sep);
                 val.push_str(path.as_str());
             }
-        }
+            val
+        } else {
+            return Ok(None);
+        };
 
-        match var(name) {
-            Ok(old) if val.is_empty() => Ok(old),
+        match env {
             Ok(old) => {
                 if !old.is_empty() {
                     val.push_str(sep);
                     val.push_str(&old);
                 }
-                Ok(val)
+                Ok(Some(val))
             }
-            Err(VarError::NotPresent) => Ok(val),
+            Err(VarError::NotPresent) => Ok(Some(val)),
             Err(e) => {
                 bail!(e);
             }
@@ -332,5 +333,59 @@ impl Store {
                 }
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::env::VarError;
+
+    use super::Store;
+
+    #[tokio::test]
+    async fn prefix_env() {
+        let store = Store {
+            path: "/fake/store".into(),
+            lock: "/dev/null".into(),
+            references: "/dev/null".into(),
+        };
+
+        let env = store
+            .prefix_env(Err(VarError::NotPresent), ":", tokio_stream::empty())
+            .await
+            .unwrap();
+        assert_eq!(env, None);
+
+        let env = store
+            .prefix_env(Ok("lorem".into()), ":", tokio_stream::empty())
+            .await
+            .unwrap();
+        assert_eq!(env, None);
+
+        let env = store
+            .prefix_env(
+                Err(VarError::NotPresent),
+                ":",
+                tokio_stream::once("lorem".into()),
+            )
+            .await
+            .unwrap();
+        assert_eq!(env, Some("lorem".into()));
+
+        let env = store
+            .prefix_env(Ok("lorem".into()), ":", tokio_stream::once("ipsum".into()))
+            .await
+            .unwrap();
+        assert_eq!(env, Some("ipsum:lorem".into()));
+
+        let env = store
+            .prefix_env(
+                Ok("lorem".into()),
+                ",",
+                tokio_stream::iter(["ipsum".into(), "dolor".into()]),
+            )
+            .await
+            .unwrap();
+        assert_eq!(env, Some("ipsum,dolor,lorem".into()));
     }
 }

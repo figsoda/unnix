@@ -198,7 +198,9 @@ impl State {
             self.extra_env(&paths, manifest),
             self.store.prefix_env_subpaths("PATH", ":", &paths, "bin"),
         )?;
-        env.entry("PATH").or_insert(path);
+        if let Some(path) = path {
+            env.entry("PATH").or_insert(path);
+        }
 
         Ok(env)
     }
@@ -219,12 +221,13 @@ impl State {
             self.store.prefix_python_subpaths(paths),
         )?;
 
-        let mut env = BTreeMap::from([
+        let env = [
             ("LD_LIBRARY_PATH", ld_library_path),
             ("LIBRARY_PATH", library_path),
             ("PKG_CONFIG_PATH", pkg_config_path),
             ("PYTHONPATH", pythonpath),
-        ]);
+        ];
+        let mut env: BTreeMap<_, _> = env.into_iter().flat_map(|(k, v)| Some((k, v?))).collect();
 
         let mut pkgs = HashMap::new();
         for entry in &self.lockfile.systems[&self.system].inner {
