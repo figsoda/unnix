@@ -1,17 +1,36 @@
 packages {
   a
   b resolver=c
+  d resolver=e
 }
 
 hydra default {
-  base d
-  project e
-  jobset f
+  base f
+  project g
+  jobset h
 }
 
 hydra c {
-  base g
-  project h
-  jobset i
-  job j
+  base i
+  project j
+  jobset k
+  job l
+}
+
+system darwin {
+  hydra e {
+    base darwin-m
+    project darwin-n
+    jobset darwin-o
+    job darwin-p
+  }
+}
+
+system linux {
+  hydra e {
+    base linux-m
+    project linux-n
+    jobset linux-o
+    job linux-p
+  }
 }

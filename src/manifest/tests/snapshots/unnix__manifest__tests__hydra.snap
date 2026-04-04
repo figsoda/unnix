@@ -14,9 +14,9 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "d",
-                            project: "e",
-                            jobset: "f",
+                            base: "f",
+                            project: "g",
+                            jobset: "h",
                             job: "{package}.{system}",
                         },
                     ),
@@ -26,10 +26,22 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "g",
-                            project: "h",
-                            jobset: "i",
-                            job: "j",
+                            base: "i",
+                            project: "j",
+                            jobset: "k",
+                            job: "l",
+                        },
+                    ),
+                },
+                "d": Package {
+                    package: "d",
+                    outputs: {},
+                    resolver: Hydra(
+                        HydraResolver {
+                            base: "darwin-m",
+                            project: "darwin-n",
+                            jobset: "darwin-o",
+                            job: "darwin-p",
                         },
                     ),
                 },
@@ -69,9 +81,9 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "d",
-                            project: "e",
-                            jobset: "f",
+                            base: "f",
+                            project: "g",
+                            jobset: "h",
                             job: "{package}.{system}",
                         },
                     ),
@@ -81,10 +93,22 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "g",
-                            project: "h",
-                            jobset: "i",
-                            job: "j",
+                            base: "i",
+                            project: "j",
+                            jobset: "k",
+                            job: "l",
+                        },
+                    ),
+                },
+                "d": Package {
+                    package: "d",
+                    outputs: {},
+                    resolver: Hydra(
+                        HydraResolver {
+                            base: "linux-m",
+                            project: "linux-n",
+                            jobset: "linux-o",
+                            job: "linux-p",
                         },
                     ),
                 },
@@ -124,9 +148,9 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "d",
-                            project: "e",
-                            jobset: "f",
+                            base: "f",
+                            project: "g",
+                            jobset: "h",
                             job: "{package}.{system}",
                         },
                     ),
@@ -136,10 +160,22 @@ Manifest {
                     outputs: {},
                     resolver: Hydra(
                         HydraResolver {
-                            base: "g",
-                            project: "h",
-                            jobset: "i",
-                            job: "j",
+                            base: "i",
+                            project: "j",
+                            jobset: "k",
+                            job: "l",
+                        },
+                    ),
+                },
+                "d": Package {
+                    package: "d",
+                    outputs: {},
+                    resolver: Hydra(
+                        HydraResolver {
+                            base: "linux-m",
+                            project: "linux-n",
+                            jobset: "linux-o",
+                            job: "linux-p",
                         },
                     ),
                 },

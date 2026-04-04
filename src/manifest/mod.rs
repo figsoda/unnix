@@ -26,7 +26,7 @@ pub struct Manifest {
     pub systems: BTreeMap<System, SystemManifest>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct SystemManifest {
     pub packages: BTreeMap<Rc<str>, Rc<Package>>,
     pub env: BTreeMap<Rc<str>, Rc<str>>,
@@ -34,6 +34,7 @@ pub struct SystemManifest {
     pub public_keys: Vec<Arc<PublicKey>>,
 }
 
+#[derive(Clone)]
 struct SurfaceSystemManifest<'a> {
     packages: BTreeMap<Rc<str>, SurfacePackage<'a>>,
     env: BTreeMap<Rc<str>, Rc<str>>,
@@ -239,32 +240,12 @@ impl Manifest {
             ]);
         }
 
-        let default_cache = default.default_cache.unwrap_or(true);
-        let mut default_cache: BTreeMap<_, _> = systems
-            .iter()
-            .map(|system| (*system, default_cache))
-            .collect();
-
-        let mut resolvers = default.resolvers;
-        resolvers.entry("default").or_default();
-
-        let default = SystemManifest {
-            packages: default
-                .packages
-                .into_iter()
-                .map(|(name, pkg)| Ok((name, Package::from_surface(pkg, &resolvers)?)))
-                .collect::<Result<_>>()?,
-            env: default.env,
-            caches: default.caches,
-            public_keys: default.public_keys,
-        };
-
         let mut systems: BTreeMap<_, _> = systems
             .into_iter()
             .map(|system| (system, default.clone()))
             .collect();
 
-        for (predicate, surface) in manifests {
+        for (predicate, layer) in manifests {
             for (system, manifest) in systems.iter_mut() {
                 if let Some(arch) = predicate.arch
                     && arch != system.arch
@@ -278,41 +259,58 @@ impl Manifest {
                     continue;
                 }
 
-                let mut resolvers = resolvers.clone();
-                resolvers.extend(
-                    surface
-                        .resolvers
-                        .iter()
-                        .map(|(&name, value)| (name, value.clone())),
-                );
-
-                for (name, pkg) in &surface.packages {
-                    let pkg = Package::from_surface(pkg.clone(), &resolvers)?;
-                    manifest.packages.insert(name.clone(), pkg);
-                }
+                manifest.packages.extend(layer.packages.clone());
 
                 manifest.env.extend(
-                    surface
+                    layer
                         .env
                         .iter()
                         .map(|(name, value)| (name.clone(), value.clone())),
                 );
 
-                if let Some(new) = surface.default_cache {
-                    default_cache.insert(*system, new);
+                if let Some(new) = layer.default_cache {
+                    manifest.default_cache = Some(new);
                 }
-                manifest.caches.extend(surface.caches.iter().cloned());
+                manifest.caches.extend(layer.caches.iter().cloned());
+
+                manifest.resolvers.extend(
+                    layer
+                        .resolvers
+                        .iter()
+                        .map(|(&name, value)| (name, value.clone())),
+                );
             }
         }
 
         let cache = Arc::new(Url::parse("https://cache.nixos.org").into_diagnostic()?);
         let pk = Arc::new(DEFAULT_PUBLIC_KEY.parse::<PublicKey>().into_diagnostic()?);
-        for (system, default_cache) in default_cache {
-            if default_cache && let Some(manifest) = systems.get_mut(&system) {
-                manifest.caches.insert(0, cache.clone());
-                manifest.public_keys.insert(0, pk.clone());
-            }
-        }
+        let systems = systems
+            .into_iter()
+            .map(|(system, mut manifest)| {
+                manifest.resolvers.entry("default").or_default();
+                let packages = manifest
+                    .packages
+                    .into_iter()
+                    .map(|(name, pkg)| {
+                        Package::from_surface(pkg, &manifest.resolvers).map(|pkg| (name, pkg))
+                    })
+                    .collect::<Result<_>>()?;
+
+                if manifest.default_cache.unwrap_or(true) {
+                    manifest.caches.insert(0, cache.clone());
+                    manifest.public_keys.insert(0, pk.clone());
+                }
+
+                let manifest = SystemManifest {
+                    packages,
+                    env: manifest.env,
+                    caches: manifest.caches,
+                    public_keys: manifest.public_keys,
+                };
+
+                Ok((system, manifest))
+            })
+            .collect::<Result<_>>()?;
 
         Ok(Manifest { systems })
     }
