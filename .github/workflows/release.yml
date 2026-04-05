@@ -13,9 +13,12 @@ jobs:
       contents: write
     steps:
       - name: Create release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        with:
-          body: "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/main/CHANGELOG.md)"
+        run: |
+          gh release create "$GITHUB_REF" \
+            --repo "$GITHUB_REPOSITORY" \
+            --notes "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/$GITHUB_REF/CHANGELOG.md)"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   release:
     name: release
