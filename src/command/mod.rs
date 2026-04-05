@@ -1,3 +1,4 @@
+mod add;
 mod cache;
 mod ci;
 mod env;
@@ -6,6 +7,7 @@ mod lock;
 mod print;
 mod update;
 
+pub use add::add;
 pub use cache::cache;
 pub use ci::ci;
 pub use env::env;

@@ -17,6 +17,9 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// Add packages to an unnix manifest
+    Add(AddArgs),
+
     /// Cache everything required for `unnix env` on the current system
     Cache(CacheArgs),
 
@@ -37,6 +40,13 @@ pub enum Command {
 
     /// Update the store paths in the lockfile
     Update,
+}
+
+#[derive(Parser)]
+pub struct AddArgs {
+    /// The list of packages to add
+    #[arg(name = "PACKAGE")]
+    pub packages: Vec<String>,
 }
 
 #[derive(Parser)]
