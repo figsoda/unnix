@@ -10,6 +10,10 @@ Reproducible Nix environments without installing Nix
 
 ## Usage
 
+> [!Warning]
+> Unnix is alpha software.
+> I recommend against running it on long-running production servers in its current state.
+
 To use unnix, start by creating `unnix.kdl`, [unnix's manifest file](docs/manifest.md)
 
 ```
