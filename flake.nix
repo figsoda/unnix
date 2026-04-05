@@ -52,7 +52,9 @@
             default = callPackage ./package.nix { };
           }
           // lib.optionalAttrs stdenv.isLinux {
-            static = pkgsStatic.callPackage ./package.nix { };
+            static = pkgsStatic.callPackage ./package.nix {
+              withBubblewrap = false;
+            };
           };
 
           checks =

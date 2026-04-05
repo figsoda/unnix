@@ -1,10 +1,14 @@
 {
   lib,
+  stdenv,
   rustPlatform,
   installShellFiles,
   pkg-config,
+  withBubblewrap ? stdenv.isLinux,
+  makeBinaryWrapper,
   xz,
   zstd,
+  bubblewrap,
 }:
 
 rustPlatform.buildRustPackage {
@@ -28,6 +32,9 @@ rustPlatform.buildRustPackage {
   nativeBuildInputs = [
     installShellFiles
     pkg-config
+  ]
+  ++ lib.optionals withBubblewrap [
+    makeBinaryWrapper
   ];
 
   buildInputs = [
@@ -43,5 +50,9 @@ rustPlatform.buildRustPackage {
   postInstall = ''
     installManPage artifacts/*.1
     installShellCompletion artifacts/unnix.{bash,fish} --zsh artifacts/_unnix
+  ''
+  + lib.optionalString withBubblewrap ''
+    wrapProgram $out/bin/unnix \
+      --prefix PATH : ${lib.makeBinPath [ bubblewrap ]}
   '';
 }
