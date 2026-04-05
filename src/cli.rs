@@ -4,7 +4,7 @@ use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 use miette::IntoDiagnostic;
 
-/// Use Nix packages without installing Nix
+/// Reproducible Nix environments without installing Nix
 #[derive(Parser)]
 #[command(version)]
 pub struct Args {

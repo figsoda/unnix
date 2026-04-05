@@ -3,12 +3,12 @@ name = "unnix"
 version = "0.1.0-alpha.3"
 authors = ["figsoda <figsoda@pm.me>"]
 edition = "2024"
-description = "Use Nix packages without installing Nix"
+description = "Reproducible Nix environments without installing Nix"
 readme = "README.md"
 homepage = "https://github.com/figsoda/unnix"
 repository = "https://github.com/figsoda/unnix"
 license = "MPL-2.0"
-keywords = ["ci", "cli", "hydra", "nix"]
+keywords = ["ci", "cli", "devbox", "hydra", "nix"]
 categories = ["command-line-utilities"]
 
 [dependencies]

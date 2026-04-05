@@ -1,6 +1,6 @@
 # unnix
 
-Use Nix packages without installing Nix
+Reproducible Nix environments without installing Nix
 
 [![release](https://img.shields.io/github/v/release/figsoda/unnix?logo=github&style=flat-square)](https://github.com/figsoda/unnix/releases)
 [![version](https://img.shields.io/crates/v/unnix?logo=rust&style=flat-square)](https://crates.io/crates/unnix)
@@ -10,7 +10,7 @@ Use Nix packages without installing Nix
 
 ## Usage
 
-To use unnix, start by creating `unnix.kdl`, unnix's manifest file written in [KDL]
+To use unnix, start by creating `unnix.kdl`, [unnix's manifest file](docs/manifest.md)
 
 ```
 unnix init -p jq ripgrep
@@ -57,11 +57,11 @@ path(store paths)
 Downloading and evaluating Nixpkgs can take a long time,
 especially in ephemeral environments like CI pipelines.
 Unnix avoids that by removing derivations from the picture altogether,
-and getting the store paths directly from CI systems like [hydra].
+and getting the store paths directly from services like [Hydra] and [Devbox].
 
 ```mermaid
 flowchart TB
-unnix --> |&nbsp;lockfile absent or outdated&nbsp;| update --> |&nbsp;hydra&nbsp;| paths
+unnix --> |&nbsp;lockfile absent or outdated&nbsp;| update --> |&nbsp;Hydra&nbsp;| paths
 unnix --> |&nbsp;up-to-date lockfile&nbsp;| paths
 paths --> |&nbsp;query&nbsp;| cache
 
@@ -84,6 +84,19 @@ unnix(unnix)
 update(update lockfile)
 ```
 
+## Platform support
+
+|                             | aarch64-darwin | aarch64-linux | x86_64-darwin | x86_64-linux |
+| --------------------------- | -------------- | ------------- | ------------- | ------------ |
+| CLI                         | partial[^1]    | yes           | partial[^1]   | yes          |
+| [GitHub action]             | yes            | yes           | no            | yes          |
+| [prebuilt binaries]         | yes            | yes           | no            | yes          |
+| cached by the default cache | yes            | yes           | yes[^2]       | yes          |
+
+[^1]: `unnix env` relies on [bubblewrap], which only works on Linux. An alternative darwin backend is work in progress.
+
+[^2]: [x86_64-darwin will be deprecated in Nixpkgs 26.11.](https://nixos.org/manual/nixpkgs/unstable/release-notes#x86_64-darwin-26.05)
+
 ## Limitations
 
 - No setup hooks
@@ -97,7 +110,7 @@ update(update lockfile)
 
   Unnix does not evaluate Nix expressions.
   You cannot use `.override` or `.overrideAttrs` on packages,
-  and are limited to the attributes your CI systems expose, e.g. [hydra] jobs.
+  and are limited to the attributes the resolver exposes, e.g. [Hydra] jobs.
 
 - No builds
 
@@ -114,5 +127,8 @@ update(update lockfile)
 
 See [CHANGELOG.md](CHANGELOG.md)
 
-[KDL]: https://kdl.dev/
-[hydra]: https://github.com/nixos/hydra
+[Devbox]: https://www.nixhub.io/
+[GitHub action]: https://github.com/figsoda/unnix-action
+[Hydra]: https://github.com/nixos/hydra
+[bubblewrap]: https://github.com/containers/bubblewrap
+[prebuilt binaries]: https://github.com/figsoda/unnix/releases
