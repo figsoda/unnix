@@ -6,26 +6,10 @@ on:
       - v[0-9]+.[0-9]+.*
 
 jobs:
-  create_release:
-    name: create_release
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Create release
-        run: |
-          gh release create "$GITHUB_REF" \
-            --repo "$GITHUB_REPOSITORY" \
-            --notes "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/$GITHUB_REF/CHANGELOG.md)"
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-  release:
-    name: release
-    needs: create_release
+  build:
+    name: build
     runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: write
+    permissions: {}
     strategy:
       matrix:
         include:
@@ -55,20 +39,16 @@ jobs:
         env:
           RUSTFLAGS: -C strip=symbols
 
-      - name: Upload asset
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # latest
+      - name: Upload binary
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          tag: ${{ github.ref }}
-          file: target/${{ matrix.target }}/release/unnix
-          asset_name: unnix-${{ matrix.target }}
+          name: unnix-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/unnix
 
   artifacts:
     name: artifacts
-    needs: create_release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -92,7 +72,34 @@ jobs:
             --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime
 
       - name: Upload artifacts
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # latest
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          tag: ${{ github.ref }}
-          file: artifacts.tar.xz
+          name: artifacts.tar.xz
+          path: artifacts.tar.xz
+
+  release:
+    name: release
+    needs:
+      - artifacts
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: artifacts
+
+      - name: Release
+        run: |
+          mv artifacts/artifacts.tar.xz assets
+          for path in artifacts/unnix-*; do
+            mv "$path/unnix" "assets/${path#artifacts/}"
+          done
+          gh release create "$GITHUB_REF" assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --notes "[CHANGELOG.md](https://github.com/figsoda/unnix/blob/$GITHUB_REF/CHANGELOG.md)"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
