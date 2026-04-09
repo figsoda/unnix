@@ -1,12 +1,15 @@
 use std::str::FromStr;
 
 use camino::Utf8PathBuf;
-use clap::{Parser, Subcommand};
+use clap::{
+    Parser, Subcommand,
+    builder::{Styles, styling::AnsiColor},
+};
 use miette::IntoDiagnostic;
 
 /// Reproducible Nix environments without installing Nix
 #[derive(Parser)]
-#[command(version)]
+#[command(styles = styles(), version)]
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
@@ -135,4 +138,12 @@ where
     fn try_into(self) -> Result<Option<T>, Self::Error> {
         self.system.map(|x| x.parse()).transpose().into_diagnostic()
     }
+}
+
+fn styles() -> Styles {
+    Styles::styled()
+        .header(AnsiColor::Green.on_default().bold())
+        .literal(AnsiColor::Blue.on_default().bold())
+        .placeholder(AnsiColor::Blue.on_default())
+        .usage(AnsiColor::Green.on_default().bold())
 }
