@@ -9,6 +9,7 @@ use std::{
     io::Cursor,
     num::NonZero,
     pin::pin,
+    sync::Arc,
     time::Duration,
 };
 
@@ -38,6 +39,7 @@ pub struct Store {
     pub path: Utf8PathBuf,
     lock: Utf8PathBuf,
     references: Utf8PathBuf,
+    tmp: Arc<Utf8Path>,
 }
 
 impl Store {
@@ -50,21 +52,19 @@ impl Store {
         let path = cache.join("store");
         let lock = cache.join("lock");
         let references = cache.join("references");
+        let tmp = cache.join("tmp");
 
-        create_dir_all(&path)
-            .into_diagnostic()
-            .wrap_err_with(|| format!("failed to create {path}"))?;
-        create_dir_all(&lock)
-            .into_diagnostic()
-            .wrap_err_with(|| format!("failed to create {lock}"))?;
-        create_dir_all(&references)
-            .into_diagnostic()
-            .wrap_err_with(|| format!("failed to create {references}"))?;
+        for path in [&path, &lock, &references, &tmp] {
+            create_dir_all(path)
+                .into_diagnostic()
+                .wrap_err_with(|| format!("failed to create {path}"))?;
+        }
 
         Ok(Store {
             path,
             lock,
             references,
+            tmp: tmp.into(),
         })
     }
 
@@ -143,6 +143,7 @@ impl Store {
         }
 
         let path = path.clone();
+        let tmp = self.tmp.clone();
         spawn_blocking(move || {
             let actual_hash = nar_hash.algorithm().digest(&buf);
             if actual_hash != nar_hash {
@@ -154,7 +155,7 @@ impl Store {
                 .wrap_err(format!("nar hash mismatch for {path}")));
             }
 
-            let tmp = TempDir::with_prefix("unnix-").into_diagnostic()?;
+            let tmp = TempDir::new_in(tmp.as_ref()).into_diagnostic()?;
             let tmp = tmp.path().join("out");
 
             Decoder::new(Cursor::new(buf))
@@ -181,7 +182,8 @@ impl Store {
     }
 
     pub async fn put_references(&self, hash: &str, references: &[StorePath]) -> Result<()> {
-        let tmp = spawn_blocking(NamedTempFile::new)
+        let tmp = self.tmp.clone();
+        let tmp = spawn_blocking(move || NamedTempFile::new_in(tmp.as_ref()))
             .await
             .into_diagnostic()?
             .into_diagnostic()?;
@@ -340,6 +342,8 @@ impl Store {
 mod tests {
     use std::env::VarError;
 
+    use camino::Utf8PathBuf;
+
     use super::Store;
 
     #[tokio::test]
@@ -348,6 +352,7 @@ mod tests {
             path: "/fake/store".into(),
             lock: "/dev/null".into(),
             references: "/dev/null".into(),
+            tmp: Utf8PathBuf::from("/dev/null").into(),
         };
 
         let env = store
