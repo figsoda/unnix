@@ -83,7 +83,7 @@ jobs:
           mv unnix /usr/local/bin
 
       - name: Set up unnix
-        uses: figsoda/unnix-action@5aaff09d70fd8d62dc92d776ee72bca817838b23 # v0.1.0-alpha.2
+        uses: figsoda/unnix-action@5aaff09d70fd8d62dc92d776ee72bca817838b23 # v0.1.0
         with:
           directory: ${{ matrix.directory }}
 
