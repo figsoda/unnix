@@ -61,11 +61,11 @@ path(store paths)
 Downloading and evaluating Nixpkgs can take a long time,
 especially in ephemeral environments like CI pipelines.
 Unnix avoids that by removing derivations from the picture altogether,
-and getting the store paths directly from services like [Hydra] and [Devbox].
+and getting the store paths directly from services like [Hydra] or [Devbox].
 
 ```mermaid
 flowchart TB
-unnix --> |&nbsp;lockfile absent or outdated&nbsp;| update --> |&nbsp;Hydra&nbsp;| paths
+unnix --> |&nbsp;lockfile absent or outdated&nbsp;| update --> |&nbsp;Hydra / Devbox&nbsp;| paths
 unnix --> |&nbsp;up-to-date lockfile&nbsp;| paths
 paths --> |&nbsp;query&nbsp;| cache
 
@@ -126,6 +126,10 @@ update(update lockfile)
 - [nix-bundle](https://github.com/nix-community/nix-bundle)
 
 - [runix](https://github.com/timbertson/runix)
+
+## Documentation
+
+See [docs/README.md](docs)
 
 ## Changelog
 
