@@ -8,12 +8,14 @@
   makeBinaryWrapper,
   xz,
   zstd,
+  writableTmpDirAsHomeHook,
   bubblewrap,
 }:
 
 rustPlatform.buildRustPackage {
   pname = "unnix";
   inherit ((lib.importTOML ./Cargo.toml).package) version;
+  __structuredAttrs = true;
 
   src = lib.fileset.toSource {
     root = ./.;
@@ -22,6 +24,7 @@ rustPlatform.buildRustPackage {
       ./Cargo.toml
       ./build.rs
       ./src
+      ./tests
     ];
   };
 
@@ -40,6 +43,11 @@ rustPlatform.buildRustPackage {
   buildInputs = [
     xz
     zstd
+  ];
+
+  # tests try to access ~/.cache/unnix
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
   ];
 
   env = {
