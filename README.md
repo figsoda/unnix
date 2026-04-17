@@ -14,9 +14,41 @@ Reproducible Nix environments without installing Nix
 > Unnix is alpha software.
 > I recommend against running it on long-running production servers in its current state.
 
+<table>
+<thead>
+  <tr>
+    <th>Try with Nix flakes</th>
+    <th>Install from crates.io</th>
+    <th>Download prebuilt binaries</th>
+  </tr>
+</thead>
+<tr>
+  <td>
+
+```bash
+nix shell github:figsoda/unnix
+```
+
+  </td>
+  <td>
+
+```bash
+cargo install unnix --locked
+```
+
+  </td>
+
+  <td align="center">
+
+[latest release](https://github.com/figsoda/unnix/releases/latest)
+
+  </td>
+</tr>
+</table>
+
 To use unnix, start by creating `unnix.kdl`, [unnix's manifest file](docs/manifest.md)
 
-```
+```bash
 unnix init -p jq ripgrep
 ```
 
