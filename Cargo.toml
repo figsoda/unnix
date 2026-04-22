@@ -70,7 +70,7 @@ default-features = false
 features = ["tokio"]
 
 [dependencies.tokio]
-version = "1.51.1"
+version = "1.52.0"
 features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
