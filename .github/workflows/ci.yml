@@ -83,7 +83,7 @@ jobs:
           mv unnix /usr/local/bin
 
       - name: Set up unnix
-        uses: figsoda/unnix-action@5aaff09d70fd8d62dc92d776ee72bca817838b23 # v0.1.0
+        uses: figsoda/unnix-action@027ef97d553bab6b4763dd3582e2a70bd6800cbf # v0.1.2
         with:
           directory: ${{ matrix.directory }}
 
@@ -117,7 +117,7 @@ jobs:
           name: unnix-${{ runner.arch }}-${{ runner.os }}
 
       - name: Install Nix
-        uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+        uses: cachix/install-nix-action@ab739621df7a23f52766f9ccc97f38da6b7af14f # v31.10.5
         if: matrix.with-nix
 
       # support for overlay mounts was added in bubblewrap 0.11.0
@@ -166,7 +166,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Nix
-        uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+        uses: cachix/install-nix-action@ab739621df7a23f52766f9ccc97f38da6b7af14f # v31.10.5
 
       - name: Set up cachix
         uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
