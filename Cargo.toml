@@ -61,7 +61,7 @@ features = [
 ]
 
 [dependencies.clap]
-version = "4.6.0"
+version = "4.6.1"
 features = ["cargo", "color", "derive", "env", "unicode", "wrap_help"]
 
 [dependencies.fs4]
@@ -75,7 +75,7 @@ features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
 camino = "1.2.2"
-clap = { version = "4.6.0", features = ["color", "derive", "env"] }
+clap = { version = "4.6.1", features = ["color", "derive", "env"] }
 clap_complete = "4.6.2"
 clap_mangen = { version = "0.3.0", features = ["env"] }
 miette = "7.6.0"
