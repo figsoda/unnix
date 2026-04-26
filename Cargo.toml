@@ -44,7 +44,7 @@ tracing = "0.1.44"
 tracing-indicatif = "0.3.14"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 url = "2.5.8"
-uuid = { version = "1.23.0", features = ["v4"] }
+uuid = { version = "1.23.1", features = ["v4"] }
 # keep-sorted end
 
 [dependencies.async-compression]
@@ -70,7 +70,7 @@ default-features = false
 features = ["tokio"]
 
 [dependencies.tokio]
-version = "1.52.0"
+version = "1.52.1"
 features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
