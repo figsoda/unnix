@@ -25,7 +25,7 @@ itertools = "0.14.0"
 kdl = "6.5.0"
 miette = { version = "7.6.0", features = ["fancy"] }
 monostate = "1.0.2"
-nix-nar = "0.3.1"
+nix-nar = "0.4.0"
 parse-display = "0.10.0"
 regex = "1.12.3"
 reqwest = { version = "0.13.2", features = ["json"] }
