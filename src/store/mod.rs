@@ -19,9 +19,9 @@ use async_compression::tokio::bufread::{
 use async_stream::stream;
 use camino::{Utf8Path, Utf8PathBuf};
 use dirs::cache_dir;
-use fs4::tokio::AsyncFileExt;
+use fs4::{TryLockError, tokio::AsyncFileExt};
 use harmonia_utils_hash::{Hash, fmt::CommonHash};
-use miette::{IntoDiagnostic, Result, WrapErr, bail, miette};
+use miette::{IntoDiagnostic, Report, Result, WrapErr, bail, miette};
 use nix_nar::Decoder;
 use tempfile::{NamedTempFile, TempDir};
 use tokio::{
@@ -74,10 +74,21 @@ impl Store {
             .await
             .into_diagnostic()
             .wrap_err_with(|| format!("failed to create {path}"))?;
-        while !lock.try_lock_exclusive().into_diagnostic()? {
-            sleep(Duration::from_millis(250)).await;
+        loop {
+            match lock.try_lock() {
+                Ok(()) => {
+                    return Ok(lock);
+                }
+                Err(TryLockError::WouldBlock) => {
+                    sleep(Duration::from_millis(250)).await;
+                }
+                Err(e) => {
+                    return Err(
+                        Report::from_err(e).wrap_err(format!("failed to acquire lock for {path}"))
+                    );
+                }
+            }
         }
-        Ok(lock)
     }
 
     pub async fn unpack_nar(
