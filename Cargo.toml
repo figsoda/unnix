@@ -26,14 +26,14 @@ kdl = "6.5.0"
 miette = { version = "7.6.0", features = ["fancy"] }
 monostate = "1.0.2"
 nix-nar = "0.4.0"
-parse-display = "0.10.0"
+parse-display = "0.11.0"
 regex = "1.12.3"
 reqwest = { version = "0.13.3", features = ["json"] }
 reqwest-middleware = "0.5.1"
 reqwest-retry = "0.9.1"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.149"
-serde_with = "3.18.0"
+serde_with = "3.19.0"
 shell-escape = "0.1.5"
 strfmt = "0.2.5"
 supports-color = "3.0.2"
