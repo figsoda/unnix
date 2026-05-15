@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use camino::Utf8PathBuf;
 use clap::{
-    Parser, Subcommand,
+    Parser, Subcommand, ValueHint,
     builder::{Styles, styling::AnsiColor},
 };
 use miette::IntoDiagnostic;
@@ -76,7 +76,7 @@ pub enum CiCommand {
 #[derive(Parser)]
 pub struct EnvArgs {
     /// Specify the command to run instead of $SHELL
-    #[arg(trailing_var_arg = true)]
+    #[arg(trailing_var_arg = true, value_hint = ValueHint::CommandWithArguments)]
     pub command: Option<Vec<String>>,
 
     #[command(flatten)]
@@ -115,7 +115,7 @@ pub struct PrintEnvArgs {
 #[derive(Parser)]
 pub struct GlobalArgs {
     /// Specify the directory the unnix manifest is in
-    #[arg(short, long, global = true)]
+    #[arg(short, long, global = true, value_hint = ValueHint::DirPath)]
     pub directory: Option<Utf8PathBuf>,
 
     /// Assert the lockfile is up to date
