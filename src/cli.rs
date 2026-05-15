@@ -76,6 +76,7 @@ pub enum CiCommand {
 #[derive(Parser)]
 pub struct EnvArgs {
     /// Specify the command to run instead of $SHELL
+    #[arg(trailing_var_arg = true)]
     pub command: Option<Vec<String>>,
 
     #[command(flatten)]
