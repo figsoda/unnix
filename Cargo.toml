@@ -33,7 +33,7 @@ reqwest-middleware = "0.5.1"
 reqwest-retry = "0.9.1"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.149"
-serde_with = "3.19.0"
+serde_with = "3.20.0"
 shell-escape = "0.1.5"
 strfmt = "0.2.5"
 supports-color = "3.0.2"
@@ -70,18 +70,18 @@ default-features = false
 features = ["tokio"]
 
 [dependencies.tokio]
-version = "1.52.2"
+version = "1.52.3"
 features = ["fs", "io-util", "macros", "rt-multi-thread", "sync", "time"]
 
 [build-dependencies]
 camino = "1.2.2"
 clap = { version = "4.6.1", features = ["color", "derive", "env"] }
-clap_complete = "4.6.3"
+clap_complete = "4.6.5"
 clap_mangen = { version = "0.3.0", features = ["env"] }
 miette = "7.6.0"
 
 [dev-dependencies]
-assert_cmd = "2.2.1"
+assert_cmd = "2.2.2"
 dir-diff = "0.3.3"
 fs_extra = "1.3.0"
 insta = "1.47.2"
