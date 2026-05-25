@@ -16,7 +16,7 @@ categories = ["command-line-utilities"]
 async-stream = "0.3.6"
 blake3 = "1.8.5"
 camino = "1.2.2"
-dashmap = { version = "6.1.0", features = ["serde"] }
+dashmap = { version = "6.2.1", features = ["serde"] }
 data-encoding = "2.11.0"
 dirs = "6.0.0"
 harmonia-store-core = "0.0.0-alpha.0"
