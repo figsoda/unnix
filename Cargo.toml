@@ -21,7 +21,7 @@ data-encoding = "2.11.0"
 dirs = "6.0.0"
 harmonia-store-core = "0.0.0-alpha.0"
 harmonia-utils-hash = "0.0.0-alpha.0"
-itertools = "0.14.0"
+itertools = "0.15.0"
 kdl = "6.7.1"
 miette = { version = "7.6.0", features = ["fancy"] }
 monostate = "1.0.2"
