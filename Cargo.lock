@@ -402,9 +402,9 @@ dependencies = [
 
 [[package]]
 name = "clap_complete"
-version = "4.6.5"
+version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0a7a9bfdb35811f9e59832f0f05975114d2251b415fb534108e6f34060fd772"
+checksum = "97bf4965940c2382204c0ded6dd3dd48c0c4e872f1e76fb1bf94f45991a2cb6a"
 dependencies = [
  "clap",
 ]
@@ -1657,9 +1657,9 @@ dependencies = [
 
 [[package]]
 name = "nix-nar"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a60e6f4acddbfaa0c363f8bdc6e4b2188d0b690c567176212f795fe008a30b3"
+checksum = "757bc2a75b33415c4732599e57309e01966ee019356ed3c105172cecad5e7ac1"
 dependencies = [
  "camino",
  "is_executable",
