@@ -1,6 +1,3 @@
-// https://github.com/rust-lang/rust/issues/147648
-#![allow(unused_assignments)]
-
 mod cli;
 mod command;
 mod lockfile;
