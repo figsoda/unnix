@@ -32,7 +32,7 @@ impl Narinfo {
         let mut compression = None;
         let mut nar_hash = None;
         let mut nar_size = None;
-        let mut references = None;
+        let mut references = Vec::new();
         let mut sig = None;
         let mut store_path = None;
         let mut url = None;
@@ -49,12 +49,10 @@ impl Narinfo {
                     nar_size = Some(value.parse().into_diagnostic()?);
                 }
                 "References" => {
-                    references = Some(
-                        value
-                            .split_whitespace()
-                            .map(StorePath::from_storeless)
-                            .collect::<Result<_>>()?,
-                    );
+                    references = value
+                        .split_whitespace()
+                        .map(StorePath::from_storeless)
+                        .collect::<Result<_>>()?;
                 }
                 "Sig" => {
                     sig = Some(value.parse().into_diagnostic()?);
@@ -72,7 +70,6 @@ impl Narinfo {
         let compression = compression.wrap_err("Compression missing in narinfo")?;
         let nar_hash = nar_hash.wrap_err("NarHash missing in narinfo")?;
         let nar_size = nar_size.wrap_err("NarSize missing in narinfo")?;
-        let mut references: Vec<_> = references.wrap_err("References missing in narinfo")?;
         let sig = sig.wrap_err("Sig missing in narinfo")?;
         let store_path = store_path.wrap_err("StorePath missing in narinfo")?;
         let url = url.wrap_err("URL missing in narinfo")?;
