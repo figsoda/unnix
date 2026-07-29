@@ -111,7 +111,9 @@ impl FromStr for Compression {
             "none" => Ok(Compression::None),
             "xz" => Ok(Compression::Xz),
             "zstd" => Ok(Compression::Zstd),
-            _ => bail!("unsupported compression format: {fmt:?}"),
+            _ => {
+                bail!("unsupported compression format: {fmt:?}");
+            }
         }
     }
 }

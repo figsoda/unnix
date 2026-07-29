@@ -72,6 +72,9 @@ async fn main() -> Result<()> {
         Command::Update => {
             command::update(args.global).await?;
         }
+        Command::With(with_args) => {
+            command::with(args.global, with_args).await?;
+        }
     }
 
     Ok(())

@@ -81,6 +81,46 @@ impl State {
         Ok(state)
     }
 
+    pub async fn filter(
+        &mut self,
+        mut packages: Vec<String>,
+        env: Option<Vec<String>>,
+    ) -> Result<()> {
+        if let Some(lockfile) = self.lockfile.systems.get(&self.system) {
+            lockfile
+                .inner
+                .retain(|pkg, _| swap_remove_eq(&mut packages, pkg));
+        }
+        if !packages.is_empty() {
+            bail!(
+                "packages not found for {}: {}",
+                self.system,
+                packages.join(", "),
+            );
+        }
+
+        if let Some(mut env) = env {
+            if !env.is_empty() {
+                if let Some(manifest) = self.manifest.systems.get_mut(&self.system) {
+                    manifest.env.retain(|var, _| swap_remove_eq(&mut env, var));
+                }
+                if !env.is_empty() {
+                    bail!(
+                        "environment variables not found for {}: {}",
+                        self.system,
+                        env.join(", "),
+                    );
+                }
+            }
+        } else {
+            if let Some(manifest) = self.manifest.systems.get_mut(&self.system) {
+                manifest.env.clear();
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn pull(&self, paths: Vec<StorePath>) -> Result<()> {
         let span = info_span!("pull", indicatif.pb_show = Empty);
         span.pb_set_message("pulling dependencies");
@@ -362,5 +402,14 @@ async fn query_one(hash: &str, cache: &Url) -> Result<Option<String>> {
                 .await
                 .into_diagnostic()?,
         ))
+    }
+}
+
+fn swap_remove_eq(xs: &mut Vec<String>, value: &str) -> bool {
+    if let Some(i) = xs.iter().position(|x| x == value) {
+        xs.swap_remove(i);
+        true
+    } else {
+        false
     }
 }

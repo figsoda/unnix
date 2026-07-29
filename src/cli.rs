@@ -43,6 +43,9 @@ pub enum Command {
 
     /// Update the store paths in the lockfile
     Update,
+
+    /// Enter an environment with the specified packages, using a subset of the manifest
+    With(WithArgs),
 }
 
 #[derive(Parser)]
@@ -108,6 +111,24 @@ pub enum PrintCommand {
 
 #[derive(Parser)]
 pub struct PrintEnvArgs {
+    #[command(flatten)]
+    pub system: SystemArgs,
+}
+
+#[derive(Parser)]
+pub struct WithArgs {
+    /// Specify the list of packages
+    #[arg(name = "PACKAGE", required = true)]
+    pub packages: Vec<String>,
+
+    /// Specify the command to run instead of $SHELL
+    #[arg(last = true, value_hint = ValueHint::CommandWithArguments)]
+    pub command: Option<Vec<String>>,
+
+    /// Include environment variables from the manifest
+    #[arg(long, num_args = ..)]
+    pub env: Option<Vec<String>>,
+
     #[command(flatten)]
     pub system: SystemArgs,
 }
