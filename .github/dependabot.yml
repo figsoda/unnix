@@ -10,7 +10,6 @@ updates:
     groups:
       cargo:
         patterns: ["*"]
-    versioning-strategy: increase
 
   - package-ecosystem: github-actions
     directory: /
