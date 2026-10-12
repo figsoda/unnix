@@ -18,7 +18,7 @@ blake3 = "1.8.5"
 camino = "1.2.2"
 dashmap = { version = "6.2.1", features = ["serde"] }
 data-encoding = "2.11.0"
-dirs = "6.0.0"
+dirs = "7.0.0"
 harmonia-store-core = "0.0.0-alpha.0"
 harmonia-utils-hash = "0.0.0-alpha.0"
 itertools = "0.15.0"
