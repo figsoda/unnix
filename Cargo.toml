@@ -18,14 +18,14 @@ blake3 = "1.8.5"
 camino = "1.2.2"
 dashmap = { version = "6.2.1", features = ["serde"] }
 data-encoding = "2.11.0"
-dirs = "6.0.0"
+dirs = "7.0.0"
 harmonia-store-core = "0.0.0-alpha.0"
 harmonia-utils-hash = "0.0.0-alpha.0"
 itertools = "0.15.0"
 kdl = "6.7.1"
 miette = { version = "7.6.0", features = ["fancy"] }
 monostate = "1.0.2"
-nix-nar = "0.5.0"
+nix-nar = "0.6.0"
 parse-display = "0.11.0"
 regex = "1.12.3"
 reqwest = { version = "0.13.4", features = ["json"] }
